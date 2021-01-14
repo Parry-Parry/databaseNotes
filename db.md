@@ -1,21 +1,3 @@
-<style TYPE="text/css">
-code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
-</style>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-    tex2jax: {
-        inlineMath: [['$','$'], ['\\(','\\)']],
-        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'] // removed 'code' entry
-    }
-});
-MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i = 0; i < all.length; i += 1) {
-        all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-});
-</script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_HTML-full"></script>
 # Database Systems Notes
 ## Lecture 1
 ### Slides
@@ -114,7 +96,7 @@ _Any entity and any relationship are modelled as a relation, which maps to a 2-d
 - Each attribute A<sub>i</sub> assumes values in a domain D<sub>i</sub>
 
 A tuple t of R is an ordered set of values corresponding to attributes of R satisfying the domain constraints: 
-t = \(v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>n</sub>\) $\in$ D<sub>i</sub>
+t = \(v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>n</sub>\) in D<sub>i</sub>
 
 An instance r\(R\) is a set of tuples:
 r\(R\) = \{t<sub>1</sub>, t<sub>2</sub>, ..., t<sub>m</sub>,\}: t<sub>i</sub> is a tuple of R
@@ -122,7 +104,7 @@ r\(R\) = \{t<sub>1</sub>, t<sub>2</sub>, ..., t<sub>m</sub>,\}: t<sub>i</sub> is
 **NULL:** : represents an unknown, or inapplicable, or uncertain, or missing value
 
 **Relational Database Schema** : set of relations
-S = \{R<sub>1</sub>, R<sub>2</sub>, ..., R<sub>k</sub>\} $\cup$ NULL
+S = \{R<sub>1</sub>, R<sub>2</sub>, ..., R<sub>k</sub>\} UNION NULL
 
 #### RELATIONAL MODEL: COMPANY 
 
