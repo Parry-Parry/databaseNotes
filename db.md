@@ -325,4 +325,133 @@ _Form specification language_ : special languages that help programmers specify 
 
 #### The Database Environment
 
+**Operating system** : schedules disk read/write
+
+**buffer management** : within DBMS, schedules read/write as buffer storage management has considerable performance impact
+
+**stored data manager** : higher\-level module of DBMS that controls access to DBMS information stored on disk that is part of the database or catalog
+
+_DDL compiler processes schema definitions and stores meta data in the DBMS catalog_
+
+**interactive query** : interface for data interaction aimed towards casual users
+
+**query compiler** : validates query input
+
+**query optimizer** : rearranges queries to eliminate redundancies and allows for efficient search algorithms. It consults the system catalog for physical information about the data and generates code that performs the necessary operations
+
+_Programs written in a host language are submitted to a precompiler_
+
+**precompiler** : extracts DML commands from an application program and sends them to the compiler, the rest of the program is sent to the host language compiler
+
+**Runtime data processor**
+- executes privilidged commands
+- exectutable query plans
+- canned transactions with runtime parameters
+
+_transaction_ : a set opf operations on the database
+
+The runtime data processor works with the system catalog and may provide statistics, it also works with the stored data manager which in turn uses basic system services for carrying out low\-level read/write. It also handles management of buffers on the main memory
+
+_concurrency control and backup and recovery systems are integrated_
+
+The **client program** accesses the DBMS on a seperate computer to the system on which the database resides. The former is called the **client computer** running DBMS client software and the latter is called the **database server**. In many cases the client accesses a middle computer called the **application server** which in turn accesses the database server.
+
+#### Database System Utilities
+
+- **Loading** : a loading utility is used to load existing data files into the database, data is often reformated for the DBMS and some vendors offer conversion tools to move these files between DBMSs
+
+- **Backup** : a backup utility creates a backup copy of the database usually by dumping the entire database onto tape or other mass storage medium. Incremental backups are often used that only store changes from the last backup which save space but are more complex
+
+- **Database Storage Reorganization** : This utility can be used to reorganize a set of database files into different file organizations and create new access paths to improve performance
+
+- **Performance Monitoring** : Such a utility monitors database usage and provides statistics to the DBA. This aids decisions such as whether or not to reorganize files or whether to add or drop indexes to improve performance
+
+_Other utilities may be availible for sorting, handling compression, access monitoring, interfacing with the network and other functions_
+
+#### Tools, Application Enviroments and Communications Facilities
+
+**Data dictionary** : stores catalog information about schemas and constraints aswell as design decisions, usage standards, application program descriptions and user information, also known as an **information repository**
+
+**Application development environments** : provide an environment for creatign database applications and include facilities that help on many facets of database systems including design, GUI development, querying and updating, and application program development
+
+**communications software** : interfaces with the DBMS to allow users at remote locations to access the database through terminals. The integration of these systems with the DBMS is called a DB/DC system
+
+#### Centralized and Client/Server Architecture for DBBMs
+
+_See page 77 for a physical centralized architecture diagram_
+
+**client/server architecture** : developed to deal with environments in which a large number of PCs, workstations and servers are connected via a network
+
+**specialized server** : a server with a specific functionality e.g file servers, printer servers, web servers or e\-mail servers
+
+_A client machine provides the user with the appropriate interfaces to utilize these servers._
+
+#### Two-Tier Client/Server Architecture for DBMSs
+
+**RDBMS** : Relational Database Management System
+
+_In this architecture the server is often called a **query / transaction server** because it provides these two functionalities_
+
+**ODBC** : Open DataBase Connectivity, a standard that provides an API which allows client\-side programs to call the DBMS
+
+_This architecture is named as such because software components are split between the client and server_
+
+#### Three\-Tier and _n_\-Tier Architectures for Web Applications
+
+_In these architectures intermediate stages are added beween the client and database server know as **Application or Web servers**_
+
+This server runs application programs and stores procedures or constraints that are used to to check access from the database server. It can also improve database security by checking client credentials before forwarding a request to the database server.
+
+In _n_\-tier architectures these layers are divided more finely allowing for each system to run on approprite processors or OSs and can be handled independently.
+
+Advances in encryption have made it safer to transfer data from server to the client but network security issues remain a major concern.
+
+#### Classification of Database Management Systems
+
+Big data systems are also known as key\-value storage systems or NOSQL systems and use various data models:
+- document\-based
+- graph\-based
+- column\-based
+- key\-value data models
+
+**Object\-relational DBMS** : based on object databases
+
+XML : eXtended Markup Language : a _tree\-structured data model_
+
+DBMSs can be categorized:
+- the number of concurrent users allowed
+- the number of sites over which the database is distributed, a centralized DBMS is stored on a single computer site but does allow multiple users, a distributed DBMS can have the database and software distributed over many sites on a network, data is often replicated to prevent loss of data availibility in the event of a site failure.
+
+**Homogeneous** : same DBMS software on all sites
+**Heterogenous** : can use different software at each site
+
+**Federated DBMS** : loosely coupled DBMSs with a degree of local autonomy
+
+- it is difficult to propose a classification of DBMSs by cost, we have open source products like MySQL and PostgreSQL aswell as giant systems sold in modular form with components to handle distribution, replication, parallel processing, mobile capacity etc.
+
+_These paid systems are often licensed with limits on database copies and concurrent accesses_
+
+**General purpose DBMS** : functions across a variety of applications
+**Speciality DBMS** : tailored performance to a specific application
+
+**Object Data Model**
+- Objects with the same structure and behaviour belong to a _class_
+- Classes are organized into _hierarchies_
+- Operations of of each class are defined in terms of predefined features called _methods_
+
+**Big Data Systems**
+- **key\-value data model** : associates a unique key with each value and provides fast access when given a key
+- **document data model** : based on JSON and stores data as documents which somewhat resemble complex objects
+- **graph data model** : stores objects as graph nodes and relationships among objects as directed graph edges
+- **column\-based data model** : store columns of rows clustered on disk pages for fast access and allow multiple versions of the data
+
+**The XML Model**
+- standard for exchanging data ove the web
+- uses hierarchical tree structure combining database concepts with concepts from document representation models
+- data is represented as elements with the use of tags
+- data can be nested to create compx tree structures
+
+**network model** : represents data as record types. A 1:n relationship relates one instance of a record to many record instances called a set type
+
+**hierarchical model** : represents data as hierarchical tree structures with each structure representing a number of related records 
 ### Chapter 5
