@@ -176,3 +176,153 @@ If t1\[FK\] = NULL then the FK in R1 should not be a part of its own primary key
 _A relation can have several different candidate keys; one of them is chosen to be the Primary Key \(PK\)_
 
 **Foreign Key \(FK\)** : In a referencing relation should either be NULL\(if it is not part of the primary key\) or have a value of the primary key of the referenced relation
+
+## Fundamentals of Database Systems
+### Chapter 2 : Database System Concepts and Architecture
+
+#### Data Models, Schemas and Instances
+
+**DBMS** : DataBase Management System, a software package designed to define, manipulate, retrieve and manage data in a database
+
+Current _cloud computing_ environments consist of thousands of large servers managing so\-called _big data_.
+
+**Client Module:** 
+- Designed to run on a mobile device, user workstation or PC
+- Applications and user interfaces that access a database run on this module
+- Handles user interaction and provides user\-friendly interfaces 
+
+**Server Module**
+- Handles data storage, access and search etc.
+
+**Data Abstraction**
+- The supression of details of data organization and storage
+- The highlighting of the essential features for an improved understanding of data
+
+**Data model** : a collection of concepts that can be used to describe the structure of a database, provides the means for data abstraction
+
+_Structure of a database_ : data types, relationships and constraints that apply to data
+
+**Basic operations** : Specify retrieval and updates on a database
+
+**Dynamic aspect** : set of valid user\-defined operations, other generic operations such as delete and modiy are often oncluded in the _basic data model operations_
+
+**Stored procedures** : Persistent stored modules to attach behaviours to relations within a database
+
+**High\-level / conceptual data models** : provides concepts close to the way users percieve data
+
+**low\-level / physical data models** : provides concepts that describe the details of how data is stored on the computer storage media
+
+**Representational / implementation data models** : provides concepts which may be easily understood by end users but are not far\-removed from how data organized in computer storage
+
+**entity** : represents a real world object or concept
+
+**attribute** : represents a property of interest that further describes an entity
+
+**relationship** : represents an association among entities
+
+**Entity\-relationship model** : high\-level conceptual model 
+
+**Record\-based data models** : represent data by using record structures
+
+**Physical data models** : describe how data is stored as files in the computer by representing information such as record formats , record orderings and access paths
+
+**Access path** : a search structure that makes the search for particular database records efficient, such as indexing or hashing
+
+**index** : an access path that allows direct access to data using an index term or keyword
+
+**self\-describing data models** : combines the description of data with the data values themselves 
+
+_In traditional models the schema is seperate from the data e.g XML and NOSQL systems_
+
+**Schema diagram** : displayed schema
+
+**Schema construct** : an object in the schema
+
+_A schema diagram displays only some aspects of a schema, it may not show data types or relationships between files_
+
+**Database state / Snapshot** : The data in a database at a particular moment in time
+
+**Defining a database**
+- specify schema
+- with just a schema this is considered the _empty state_
+- when we populate the database initially this is known as the _initial state_
+- at any point in time the database has a _current state_
+- A DBMS is partly responsible for ensuring that every state is a _valid state_
+
+_A database state is called an **extension** of the schema_
+
+**Schema evolution** : Modifying the schema as application requirements change
+
+#### Three\-Schema Architecture and Data Independence
+
+**Important characteristics of the database approach**
+- use of a catalog to store the schema as to make it self\-describing
+- insulation of programs and data
+- support of multiple user views
+
+**Three\-Schema Architecture** : separates the user applications from the physical database
+
+_In this architecture schema can be defined on three levels:_
+- **Internal level** : describes the physical storage structure of the database, uses a physical data model and describes the complete details of data storage and access paths
+- **Conceptual level** : describes the structure of the whole database, it hides tge details of physical storage structures and concentrates on the entities, data types, relationships, user operations and constraints. _Usually described by a representational model_
+- **External / View level** : A number of external schemas or user views, each external schema describes the part of the database a particular user group is interested in. _Usually described by a representational model_
+
+**Mapping** : the process of transforming requests and results between levels
+
+**Data independence** : the capacity to change the schema at one level of a database system without having to change the schema at the next higher level
+
+_We can describe two types of data independence:_
+- **Logical data independence** : the capacity to change the conceptual schema without having to change the external schemas or application programs, this can be done to expand the database to change constraints or to reduce the database i.e removing a record type or data item
+- **Physical dat independence** : the capacity to change the internal schema without having to change the conceptual schema. Changes to the internal schema may have to occur because physical files may have been reorganized
+
+#### Database Languages and Interfaces
+
+_The DBMS must provide appropriate languages and interfaces for each category of users._
+
+**DDL** : Data Definition Language, where no strict separation of levels is maintained one language can be used to define both schemas
+
+**SDL** : Storage Definition Language, used to specify the internal schema, the mapping between schemas can be done in either of these languages
+
+**VDL** : View Definition Language, specifies user views and mappings to the conceptual schema, in most DBMSs the DDL is used to define both conceptual and external schemas
+
+_In relational DBMSs, SQL is used in the role of VDL_
+
+**DML** : Data Manipulation Language, provides means to manipulate the database such as retrieval, insertion, deletion and modification of data
+
+_In current DBMSs these languages are not usually distinct from on another_
+
+**High\-level DML** : can be used on its own to concisely specify complex database operations, statements can be entered from a display, terminal or within an embedded programming language
+
+**Low\-level / Procedural DML** : _must_ be embedded in a general purpose language, typically retrieves individual records or objects and processes them seperately
+
+**Host language** : the general purpose language used to enter DML statements
+
+**Data sublanguage** : DML statements
+
+**Query language** : high\-level DML used in a standalone interactive manner
+
+#### DBMS Interfaces
+
+**Menu-based Interfaces** : presents the user with a list of options that lead the user through the formulation of a request
+
+**Apps for Mobile Devices** : presents mobile users with access to their data providing a limited menu of options
+
+**Form-based interfaces** : allows users to fill out form entries to insert new data or fill out certain entries to retrieve matching data
+
+_Form specification language_ : special languages that help programmers specify forms e.g SQL\*, Oracle Forms
+
+**Graphical user interfaces** : typically displays a schema in diagrammatic form, the user can then specify a query by manipulating the diagram
+
+**Natural language interfaces** : accept requests written in English or another language and attempts to understand them, if this fails a dialogue can be entered with the user to clarify a request
+
+**Keyword\-based Database Search** : similar to web search engines, they use predefined indexes on words and use ranking functions to retriev and present documents in a decreasing degree of match
+
+**Speech input and output** : use of speech as an input query and an answer to a question is now commonplace. Input is detected using a library of predefined words and used to set up parameters passed to a query, output is similarly converted
+
+**Interfaces for Parametric Users** : parametric users such as bank tellers often have a small set of operations they must perform repeatedly so a special interface for each user group is designed and implemented to minimise keystrokes required for each request
+
+**Interfaces for the DBA** : most databases contain privileged commands that can only be used by the DBA staff including commands for creating accounts, setting system parameters, authorizing accoutns, changing schema and reorganizing storage structures.
+
+#### The Database Environment
+
+### Chapter 5
