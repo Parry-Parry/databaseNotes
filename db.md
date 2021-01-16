@@ -454,4 +454,158 @@ _These paid systems are often licensed with limits on database copies and concur
 **network model** : represents data as record types. A 1:n relationship relates one instance of a record to many record instances called a set type
 
 **hierarchical model** : represents data as hierarchical tree structures with each structure representing a number of related records 
-### Chapter 5
+
+### Chapter 5: The Relational Database Model and Relational Database Constraints
+
+_mathematical relation_ : a table of vlaues with its theorectical basis in set theory and predicate logic
+
+#### Relational Model Concepts
+
+**flat file** : model with each record following a simple linear or _flat_ structure
+
+**domain** : set of atomic values
+
+_atomic_ : each value in the domain is indivisible as far as the relational model is concerned 
+
+_a data type is specified for each domain_
+
+**degree of a relation** : number of attributes of its schema
+
+**relational intension** : the schema
+
+**relation extension** : the relation of the schema
+
+_A relation is a mathematical relation on domains which is a subset of the Cartesian product_
+
+**Cartesian product** : total number of tuples in a relation state
+
+_Attribute names indicate different roles of a domain e.g list of all phone numbers and a home phone attribute_
+
+#### Characteristics of Relations
+
+**Ordering of Tuples in a Relation**
+- A relation is defined as a set of tuples
+- elements of a set have no order
+- records are physically stored on a disc so there is always an order among records
+
+**self\-describing data** : description of each value is included in the tuple
+
+**Values and NULLS in Tuples**
+- each value in a tuple is an atomic value
+- composite and multiple attributes are not allowed
+- NULL is used to represent values that are unknown or do not apply to a tuple
+
+**NULL can mean:**
+- value unknown
+- value exists but is unavailible
+- attribute does not apply
+- exact meaning in context is found by comparisons to other values
+
+_Do not compare two NULL values_ 
+
+_Relations may represent:_
+- facts about entities
+- facts about relationships
+
+_Interpreting relational schema as a **predicate**_
+- values in each tuple are interpreted as values that satify the predicate
+- an assumption called the **closed world assumption** states that the only true facts in the universe are those present within the extension of the relation\(s\)
+
+**Relational Model Notation**
+- Relational schema _R_ of degree _n_ is denoted by R\(A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub>\)
+- The uppercase letters _Q, R, S_ denote relation names
+- The lowercase letters _q, r, s_ denote relation states
+- The letters _t, u, v_ denote tuples
+- The name of a relational schema e.g STUDENT generally indicates the current set of tuples in that relation \- the _current relation state_
+- An attribute _A_ can be qualified with the relation name _R_ to which it belongs by using the dot notation _R.A_, all attribute names in a particular relation must be distinct
+- An _n_\-tuple in a relation _r\(R\_ is denoted by t = <\v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>n</sub>> where v<sub>i</sub> is the value corresponding to attribute A<sub>i</sub> 
+- Both t\[A<sub>i</sub>\] and t.A<sub>i</sub> refer to the value v<sub>i</sub> in t for the attribute A<sub>i</sub>
+- Both t\[A<sub>u</sub>, A<sub>w</sub>, ..., A<sub>z</sub>\] and t.\(A<sub>u</sub>, A<sub>w</sub>, ..., A<sub>z</sub>\) refer to the subtuple of values <A<sub>u</sub>, A<sub>w</sub>, ..., A<sub>z</sub>> from t corresponding to the attributes specified in the list
+
+#### Relational Model Constraints and Relational Database Schemas
+
+**Constraints on databases can generally be divided into three main categories:**
+- **inherent model\-based constraints** : constraints that are inherent to the data model
+- **schema\-based constraints** : constraints that can be directly expressed in the schemas of the data model typically by specifyingthem in the DDL
+- **semantic / application\-based constraints** : constraints that cannot be directly expressed in the schemas of the data model and hence must be expressed and enforced by the application programs
+
+#### Domain Constraints 
+
+_Domain constraints specify that within each tuple, the value of each attribute A must be an atomic valie from the domain dom\(A\). Domains can be describe by standard data types or by a subrange of values fro ma data type or as an enumerated data type._ 
+
+#### Key Constraints and Constraints on NULL Values 
+
+**subsets of attributes** : property that no two tuples in any relation state _r_ of R should have the same combination of values for those attributes
+
+**Superkey** : specifies a uniqueness contraint that no distinct tuples in any state _r_ of R can have the same value for superkey
+- every realtion has at least one default superkey
+- a superkey can have redundant attributes 
+
+**key** : a key k of relation schema R is a superkey of R with the additional property that removing any attribute A form K leaves a set of attributes K' that is not a superkey of R anymore
+
+_A key satisfies two properties:_
+- Two distinct tuples in any state of the relation cannot have indentical values for all attributes in the key
+- It is a minimal superkey \- that is, a superkey from which we cannot remove any attributes and still have the uniqueness constrain hold
+
+_every key is a superkey but not vice versa_
+
+_a key is determined form the meaning of the attributes and is time\-invariant, it must continue to hold when we insert new tuples_
+
+A relation schema may have more than one key. In this case, each of the keys is called a candidate key. It is common to designate one of the candidate keys as a primary key used to identify tuples in the relation, others are designated unique keys.
+
+#### Relational Databases and Relational Database Schemas 
+
+**relational database schema** : A set of relation schemas and a set of integrity constraints 
+
+#### Entity Integrity, Referential Integrity and Foreign Keys
+
+**referential integrity constraint** : specified between two relations and is used to maintain the consistency among tuples in the two relations
+
+**Foreign Keys**
+- The attributes in FK have the same domain\(s\) as the primary key attributes PK of R<sub>2</sub> ; the attributes FK are said to reference or refer to the relation R<sub>2</sub>
+- A value of FK in a tuple t<sub>1</sub> of the current state r<sub>1</sub>\(R<sub>1</sub>\) either occurs as a value of PK for some tuple t<sub>2</sub> in the current state r<sub>2</sub>\(R<sub>2</sub>\) or is NULL. In the former case, we have t<sub>1</sub>\[FK\] = t<sub>2</sub>\[PK\], and we say that the tuple t<sub>1</sub> references or refers to the tuple t<sub>2</sub> 
+
+_In this definition, R<sub>1</sub> is called the referencing relation and R<sub>2</sub> is the referenced relation_
+
+_A foreign key can refer to its own relation_
+
+We can diagrammatically display referential integrity constraints by drawing a directed arc from each foreign key to the relation it references. For clarity, the arrowhead may point to the primary key of the referenced relation.
+
+All integrity constraints should be specified on the relational database schema if we want the DBMS to enforce these constraints. Hence, the DDL includes provisions for specifying the various types of constraints so that the DBMS can automatically enforce them.
+
+#### Other Types of Constraints
+
+**semantic integrity constraints** : enforced within the application programs. It is more common to check for these types of constraints within the application programs than to use constraint specification languages because the latter are sometimes difficult and complex to use
+
+#### Update Operations, Transactions, and Dealing with Constraint Violations
+
+**result relation** : becomes the answer to \(or result of \) the user’s query
+
+**Basic Operations**
+- **Insert** : insert one or more new tuples
+- **Delete** : deletes tuples
+- **Update** : used to change the values of some attributes in existing tuples
+
+The Insert operation provides a list of attribute values for a new tuple t that is to be inserted into a relation R . Insert can violate any of the four types of constraints. Domain constraints can be violated if an attribute value is given that does not appear in the corresponding domain or is not of the appropriate data type. Key constraints can be violated if a key value in the new tuple t already exists in another tuple in the relation r \( R \). Entity integrity can be violated if any part of the primary key of the new tuple t is NULL . Referential integrity can be violated if the value of any foreign key in t refers to a tuple that does not exist in the referenced relation.
+
+The Delete operation can violate only referential integrity. This occurs if the tuple being deleted is referenced by foreign keys from other tuples in the database. To specify deletion, a condition on the attributes of the relation selects the tuple \(or tuples\) to be deleted.
+
+**Options if deletion cause violation**
+- **restrict** : rejects the deletion
+- **cascade** : attempt to propagate the deletion by deleting tuples that reference the deleted tuple
+- **set NULL** : modify the affected attributes to NULL or reference a valid tuple, cannot occur if the violation is part of a primary key
+
+The Update \(or Modify\) operation is used to change the values of one or more attributes in a tuple \(or tuples\) of some relation R . It is necessary to specify a condition on the attributes of the relation to select the tuple \(or tuples\) to be modified.
+
+_Updating an attribute that is neither part of a primary key nor part of a foreign key usually causes no problems, if a foreign key is modified the DBMS must make sure that the new value refers to an existing tuple in the referenced relation \(or is set to NULL\)._
+
+#### The Transaction Concept
+
+**Transaction** : an executing program that includes some database operations, such as reading from the database, or applying insertions, deletions, or updates to the database
+- At the end of the transaction, it must leave the database in a valid or consistent state that satisfies all the constraints specified on the database schema 
+- A single transaction may involve any number of retrieval operations and any number of update operations 
+- These retrievals and updates will together form an atomic unit of work against the database
+
+**online transaction processing (OLTP )** : commercial applications running against relational databases that execute transactions at rates that reach several hundred per second
+
+
