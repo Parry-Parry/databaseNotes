@@ -661,7 +661,7 @@ _As a result, it has become necessary with increasing frequency to build structu
 
 One popular approach is the creation of data warehouses, where information from many legacy databases is copied periodically, with the appropriate translation, to a central database.
 
-#### Overview of a Database Management System
+### Chapter 2 : Overview of a Database Management System
 
 **Distinct sources of commands to a DBMS:**
 - Conventional users and application programs that ask for data or modify data
