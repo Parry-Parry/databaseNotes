@@ -608,4 +608,153 @@ _Updating an attribute that is neither part of a primary key nor part of a forei
 
 **online transaction processing (OLTP )** : commercial applications running against relational databases that execute transactions at rates that reach several hundred per second
 
+## Database Systems: The Complete Book
 
+### Chapter 1
+
+**The Evolution of Database Systems**
+
+_A DBMS is expected to:_
+- Allow users to create new databases and specify their schemas
+- Give users the ability to query the data (a “query” is database lingo for a question about the data) and modify the data, using an appropriate language
+- Support the storage of very large amounts of data over a long period of time, allowing efficient access to the data for queries and database modifications
+- Enable durability, the recovery of the database in the face of failures, errors of many kinds, or intentional misuse
+- Control access to data from many users at once, without allowing unexpected interactions among users \(called isolation\) and without actions on the data to be performed partially but not completely \(called atomicity\)
+
+#### Early Database Systems
+
+**First Important Applications of DBMSs:**
+- **Banking systems** : maintaining accounts and making sure that system failures do not cause money to disappear
+- **Airline reservation systems** : these, like banking systems, require assurance that data will not be lost, and they must accept very large volumes of small actions by customers
+- **Corporate record keeping** : employment and tax records, inventories, sales records, and a great variety of other types of information, much of it critical
+
+_Early databases were modelled with tree\-based models and the graph\-based network model but did not support high\-level query languages_
+
+#### Relational Database Systems
+
+_Useless to repeat information._
+
+#### Smaller and Smaller Systems
+
+_DBMSs were:_
+- large, expensive software systems
+- run on large computers as to store a gigabyte required this
+
+#### Bigger and Bigger Systems
+
+**Examples of Large Databases:**
+- Google holds petabytes of data gleaned from its crawl of the Web. This data is not held in a traditional DBMS, but in specialized structures optimized for search-engine queries
+- Satellites send down petabytes of information for storage in specialized systems
+- A picture is actually worth way more than a thousand words. You can store 1000 words in five or six thousand bytes. Storing a picture typically takes much more space. Repositories such as Flickr store millions of pictures and support search of those pictures. Even a database like Amazon’s has millions of pictures of products to serve
+- And if still pictures consume space, movies consume much more. An hour of video requires at least a gigabyte. Sites such as YouTube hold hundreds of thousands, or millions, of movies and make them available easily
+- Peer-to-peer file-sharing systems use large networks of conventional computers to store and distribute data of various kinds. Although each node in the network may only store a few hundred gigabytes, together the database they embody is enormous
+
+#### Information Integration
+
+**Information Integration** : joining the information contained in many related databases into a whole. For example, a large company has many divisions. Each division may have built its own database of products or employee records independently of other divisions
+
+- These divisions may use different DBMS’s and different structures for information
+- They may use different terms to mean the same thing or the same term to mean different things
+- To make matters worse, the existence of legacy applications using each of these databases makes it almost impossible to scrap them, ever.
+
+_As a result, it has become necessary with increasing frequency to build structures on top of existing databases._
+
+One popular approach is the creation of data warehouses, where information from many legacy databases is copied periodically, with the appropriate translation, to a central database.
+
+#### Overview of a Database Management System
+
+**Distinct sources of commands to a DBMS:**
+- Conventional users and application programs that ask for data or modify data
+- A **database administrator** : a person or persons responsible for the structure or schema of the database
+
+#### Data\-Definition Language Commands
+
+_The second kind of command is the simpler to process_
+
+These schema\-altering data-definition language commands are parsed by a DDL processor and passed to the execution engine, which then goes through the index/file/record manager to alter the metadata
+
+#### Overview of Query Processing
+
+A user or an application program initiates some action, using the data-manipulation language. This command does not affect the schema of the database, but may affect the content of the database _if the action is  a modification command_ or will extract data from the database _if the action is a query_. DML statements are handled by two separate subsystems, as follows.
+
+**Answering the Query**
+
+- The query is parsed and optimized by a query compiler
+- The resulting query plan, or sequence of actions the DBMS will perform to answer the query, is passed to the execution engine
+- The execution engine issues a sequence of requests for small pieces of data, typically records or tuples of a relation, to a resource manager that knows about data files
+- The requests for data are passed to the buffer manager
+- The buffer manager’s task is to bring appropriate portions of the data from secondary storage where it is kept permanently, to the main-memory buffers
+
+_Normally, the page or “disk block” is the unit of transfer between buffers and disk_
+
+- The buffer manager communicates with a storage manager to get data from disk
+- The storage manager might involve operating-system commands, but more typically, the DBMS issues commands directly to the disk controller
+
+**Transaction Processing**
+
+- Queries and other DML actions are grouped into transactions, which are units that must be executed atomically and in isolation from one another
+- Any query or modification action can be a transaction by itself
+- In addition, the execution of transactions must be **durable**, meaning that the effect of any completed transaction must be preserved even if the system fails in some way right after completion of the transaction
+
+_Divisions of the transaction processor:_
+- **concurrency-control manager / scheduler** : responsible for assuring atomicity and isolation of transactions
+- **logging and recovery manager** : responsible for the durability of transactions
+
+#### Storage and Buffer Management
+
+- To perform any useful operation on data, that data must be in main memory
+- It is the job of the **storage manager** to control the placement of data on disk and its movement between disk and main memory
+- In a simple database system, the storage manager might be nothing more than the file system of the underlying operating system
+- DBMS’s normally control storage on the disk directly, at least under some circumstances
+- The storage manager keeps track of the location of files on the disk and obtains the block or blocks containing a file on request from the buffer manager
+- The buffer manager is responsible for partitioning the available main memory into buffers
+
+**Buffers** : page-sized regions into which disk blocks can be transferred
+
+_Thus, all DBMS components that need information from the disk will interact with the buffers and the buffer manager, either directly or through the execution engine_
+
+**Information needed by DBMS components**
+- **Data** : the contents of the database itself
+- **Metadata** : the database schema that describes the structure of, and constraints on, the database
+- **Log Records** : information about recent changes to the database; these support durability of the database
+- **Statistics** : information gathered and stored by the DBMS about data properties such as the sizes of, and values in, various relations or other components of the database
+- **Indexes** : data structures that support efficient access to the data
+
+#### Transaction Processing
+
+**The transaction processor performs the following tasks:**
+- **Logging** : In order to assure durability, every change in the database is logged separately on disk
+
+_The log manager follows one of several policies designed to assure that no matter when a system failure or “crash” occurs, a recovery manager will be able to examine the log of changes and restore the database to some consistent state._
+
+_The log manager initially writes the log in buffers and negotiates with the buffer manager to make sure that buffers are written to disk \(where data can survive a crash\) at appropriate times._
+
+- **Concurrency control** : Transactions must appear to execute in isolation. But in most systems, there will in truth be many transactions executing at once
+
+- The **scheduler \(concurrency-control manager\)** must assure that the individual actions of multiple transactions are executed in such an order that the net effect is the same as if the transactions had in fact executed in their entirety, one\-at\-a\-time
+
+- A typical scheduler does its work by maintaining locks on certain pieces of the database
+
+- These locks prevent two transactions from accessing the same piece of data in ways that interact badly
+
+- **Deadlock resolution** : As transactions compete for resources through the locks that the scheduler grants, they can get into a situation where none can proceed because each needs something another transaction has
+
+_The transaction manager has the responsibility to intervene and cancel \(“rollback” or “abort”\) one or more transactions to let the others proceed._
+
+#### The Query Processor 
+
+Portion of the DBMS that most affects the performance that the user sees, it can be divided into two main components.
+
+**Query Compiler** : translates the query into an internal form called a query plan
+
+_The query compiler consists of three major units:_
+- **query parser** : builds a tree structure from the textual form of the query
+- **query preprocessor** : performs semantic checks on the query and performing some tree transformations to turn the parse tree into a tree of algebraic operators representing the initial query plan
+- **query optimizer** : transforms the initial query plan into the best available sequence of operations on the actual data
+
+_The query compiler uses metadata and statistics about the data to decide which sequence of operations is likely to be the fastest_
+
+**Execution Engine** : has the responsibility for executing each of the steps in the chosen query plan 
+- The execution engine interacts with most of the other components of the DBMS, either directly or through the buffers
+- It must get the data from the database into buffers in order to manipulate that data
+- It needs to interact with the scheduler to avoid accessing data that is locked, and with the log manager to make sure that all database changes are properly logged
