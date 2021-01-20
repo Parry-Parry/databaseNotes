@@ -758,3 +758,316 @@ _The query compiler uses metadata and statistics about the data to decide which 
 - The execution engine interacts with most of the other components of the DBMS, either directly or through the buffers
 - It must get the data from the database into buffers in order to manipulate that data
 - It needs to interact with the scheduler to avoid accessing data that is locked, and with the log manager to make sure that all database changes are properly logged
+
+# Week 2
+### Chapter 14: Basics of Functional Dependencies and Normalization for Relational Databases
+
+There are two levels at which we can discuss the goodness of relation schemas:
+- logical \(or conceptual\) level : how users interpret the relation schemas and the meaning of their attributes
+- implementation \(or physical storage\) level : how the tuples in a base relation are stored and updated
+
+_This level applies only to schemas of base relations— which will be physically stored as files— whereas at the logical level we are interested in schemas of both base relations and views \(virtual relations\)._
+
+**bottom-up design methodology** : considers the basic relationships among individual attributes as the starting point and uses those to construct relation schemas
+
+_This approach is not very popular in practice because it suffers from the problem of having to collect a large number of binary relationships among attributes as the starting point. For practical situations, it is next to impossible to capture binary relationships among all such pairs of attributes._
+
+**top-down design methodology** 
+- starts with a number of groupings of attributes into relations that exist together naturally, for example, on an invoice, a form, or a report
+- The relations are then analyzed individually and collectively, leading to further decomposition until all desirable properties are met
+
+Relational database design goals:
+- information preservation : maintaining all concepts, including attribute types, entity types, and relationship types as well as generalization/specialization relationships
+- minimum redundancy : implies minimizing redundant storage of the same information and reducing the need for multiple updates to maintain consistency across multiple copies of the same information in response to real-world events that require making an update
+
+**functional dependency** : formal constraint among attributes that is the main tool for formally measuring the appropriateness of attribute groupings into relation schemas
+
+#### Informal Design Guidelines for Relation Schemas
+
+Measures to determine the quality of relation schema design:
+- Making sure that the semantics of the attributes is clear in the schema
+- Reducing the redundant information in tuples
+- Reducing the NULL values in tuples
+- Disallowing the possibility of generating spurious tuples
+
+#### Imparting Clear Semantics to Attributes in Relations
+
+**semantics** : a realtions meaning resulting from the interpretation of attribute values in a tuple
+
+_The ease with which the meaning of a relation’s attributes can be explained is an informal measure of how well the relation is designed._
+
+**Informal design guideline**
+
+Guideline 1:
+- Design a relation schema so that it is easy to explain its meaning. Do not combine attributes from multiple entity types and relationship types into a single relation
+- Intuitively, if a relation schema corresponds to one entity type or one relationship type, it is straightforward to explain its meaning.
+- Otherwise, if the relation corresponds to a mixture of multiple entities and relationships, semantic ambiguities will result and the relation cannot be easily explained.
+
+#### Redundant Information in Tuples and Update Anomalies
+
+- One goal of schema design is to minimize the storage space used by the base relations \(and hence the corresponding files\)
+- Grouping attributes into relation schemas has a significant effect on storage space
+
+Storing natural joins of base relations leads to an additional problem referred to as update anomalies . These can be classified into insertion anomalies, deletion anomalies, and modification anomalies:
+
+- **Insertion anomalies** : Issues that arise when initialising new tuples when all details of a parent object must be entered though they are not known, e.g making an employee record consistent with a department. They also occur when trying to initialise a new object that as of yet has no children, so NULL values must be entered which may violate the primary key
+
+- **Deletion anomalies** : The problem of deletion anomalies is related to the second insertion anomaly situation just discussed. When the last child of an object is deleted all of the information regarding that bject can be lost
+
+- **Modification anomalies** : If one attribute of an object is modified in a child then all instances of that attribute must be updated across all children otherwise different values can occur for the same attribute
+
+Guideline 2:
+- Design the base relation schemas so that no insertion, deletion, or modification anomalies are present in the relations
+- If any anomalies are present, note them clearly and make sure that the programs that update the database will operate correctly
+
+_It is important to note that these guidelines may sometimes have to be violated in order to improve the performance of certain queries._
+
+#### NULL Values in Tuples
+
+- In some schema designs we may group many attributes together into a “fat” relation
+- If many of the attributes do not apply to all tuples in the relation, we end up with many NULLs in those tuples
+- This can waste space at the storage level and may also lead to problems with understanding the meaning of the attributes and with specifying JOIN operations at the logical level
+
+NULLs can have multiple interpretations, such as the following:
+- The attribute does not apply to this tuple. For example, Visa_status may not apply to U.S. students
+- The attribute value for this tuple is unknown. For example, the Date_of_birth may be unknown for an employee
+- The value is known but absent; that is, it has not been recorded yet. For example, the Home_Phone_Number for an employee may exist, but may not be available and recorded yet
+
+Guideline 3:
+- As far as possible, avoid placing attributes in a base relation whose values may frequently be NULL
+- If NULLs are unavoidable, make sure that they apply in exceptional cases only and do not apply to a majority of tuples in the relation
+- Using space efficiently and avoiding joins with NULL values are the two overriding criteria that determine whether to include the columns that may have NULLs in a relation or to have a separate relation for those columns
+
+#### Generation of Spurious Tuples
+
+**spurious tuples** : extra tuples created from a poorly designed relation using a JOIN operation that contain information that is not valid
+
+Guideline 4:
+- Design relation schemas so that they can be joined with equality conditions on attributes that are appropriately related pairs in a way that guarantees that no spurious tuples are generated
+- Avoid relations that contain matching attributes that are not FK/PK combinations because joining on such attributes may produce spurious tuples
+
+#### Summary and Discussion of Design Guidelines
+
+Problems which can be detected without additional tools of analysis, are as follows:
+- Anomalies that cause redundant work to be done during insertion into and modification of a relation, and that may cause accidental loss of information during a deletion from a relation
+- Waste of storage space due to NULLs and the difficulty of performing selections, aggregation operations, and joins due to NULL values
+- Generation of invalid and spurious data during joins on base relations with matched attributes that may not represent a proper FK/PK relationship
+
+#### Functional Dependencies
+
+The single most important concept in relational schema design theory is that of a functional dependency.
+
+#### Definition of Functional Dependency
+
+- A functional dependency is a constraint between two sets of attributes from the database
+
+**Definition** : A functional dependency, denoted by X → Y , between two sets of attributes X and Y that are subsets of R specifies a constraint on the possible tuples that can form a relation state r of R. The constraint is that, for any two tuples t<sub>1</sub> and t<sub>2</sub> in r that have t<sub>1</sub>\[X\] = t<sub>2</sub>\[X\], they must also have t<sub>1</sub>\[Y\] = t<sub>2</sub>\[Y\]
+
+- This means that the values of the Y component of a tuple in r depend on, or are determined by, the values of the X component; alternatively, the values of the X component of a tuple uniquely \(or functionally\) determine the values of the Y component
+- We also say that there is a functional dependency from X to Y, or that Y is functionally dependent on X
+
+Thus, X functionally determines Y in a relation schema R if, and only if, whenever two tuples of r\(R\) agree on their X\-value, they must necessarily agree on their Y\-value. 
+
+Note the following:
+- If a constraint on R states that there cannot be more than one tuple with a given X\-value in any relation instance r\(R\) — that is, X is a candidate key of R — this implies that X → Y for any subset of attributes Y of R \(because the key constraint implies that no two tuples in any legal state r\(R\) will have the same value of X\). If X is a candidate key of R , then X → R
+- If X → Y in R, this does not say whether or not Y → X in R
+
+Relation extensions r\(R\) that satisfy the functional dependency constraints are called legal relation states \(or legal extensions\) of R
+
+- A functional dependency is a property of the relation schema R , not of a particular legal relation state r of R
+- Therefore, an FD cannot be inferred automatically from a given relation extension r but must be defined explicitly by someone who knows the semantics of the attributes of R
+
+- Given a populated relation, we cannot determine which FDs hold and which do not unless we know the meaning of and the relationships among the attributes. All we can say is that a certain FD may exist if it holds in that particular extension
+- All we can say is that a certain FD may exist if it holds in that particular extension. We cannot guarantee its existence until we understand the meaning of the corresponding attributes
+- We can, however, emphatically state that a certain FD does not hold if there are tuples that show the violation of such an FD
+
+**diagrammatic notation**
+- Each FD is displayed as a horizontal line
+- The left\-hand\-side attributes of the FD are connected by vertical lines to the line representing the FD
+- The right\-hand\-side attributes are connected by the lines with arrows pointing toward the attributes
+
+#### Normal Forms Based on Primary Keys
+
+We assume that a set of functional dependencies is given for each relation, and that each relation has a designated primary key; this information combined with the tests \(conditions\) for normal forms drives the normalization process for relational schema design
+
+Most practical relational design projects take one of the following two approaches:
+- Perform a conceptual schema design using a conceptual model such as ER or EER and map the conceptual design into a set of relations
+- Design the relations based on external knowledge derived from an existing implementation of files or forms or reports
+
+#### Normalization of Relations
+
+- The normalization process takes a relation schema through a series of tests to certify whether it satisfies a certain normal form
+- The process, which proceeds in a top\-down fashion by evaluating each relation against the criteria for normal forms and decomposing relations as necessary, can thus be considered as relational design by analysis
+
+**normal form** : the highest normal form condition that it meets, and hence indicates the degree to which it has been normalized
+
+Normalization of data can be considered a process of analyzing the given relation schemas based on their FDs and primary keys to achieve the desirable properties of:
+- minimzing redundancy
+- minimizing the insertion, deletion, and update anomalies. It can be considered as a “filtering” or “purification” process to make the design have successively better quality
+
+The normalization procedure provides database designers with the following:
+- A formal framework for analyzing relation schemas based on their keys and on the functional dependencies among their attributes
+- A series of normal form tests that can be carried out on individual relation schemas so that the relational database can be normalized to any desired degree
+
+Rather, the process of normalization through decomposition must also confirm the existence of additional properties that the relational schemas, taken together, should possess. 
+
+These would include two properties:
+- The nonadditive join or lossless join property , which guarantees that the spurious tuple generation problem does not occur with respect to the relation schemas created after decomposition
+- The dependency preservation property, which ensures that each functional dependency is represented in some individual relation resulting after decomposition
+
+_The nonadditive join property is extremely critical and must be achieved at any cost , whereas the dependency preservation property, although desirable, is sometimes sacrificed._
+
+#### Practical Use of Normal Forms
+
+- Most practical design projects in commercial and governmental environment acquire existing designs of databases from previous designs, from designs in legacy models, or from existing files
+- They are certainly interested in assuring that the designs are good quality and sustainable over long periods of time
+- Existing designs are evaluated by applying the tests for normal forms, and normalization is carried out in practice so that the resulting designs are of high quality and meet the desirable properties stated previously
+
+_Another point worth noting is that the database designers need not normalize to the highest possible normal form and may do this for performance reasons._
+
+**Denormalization** : storing the join of higher normal form relations as a base relation, which is in a lower normal form
+
+#### Definitions of Keys and Attributes Participating in Keys
+
+An attribute of relation schema R is called a prime attribute of R if it is a member of some candidate key of R . An attribute is called nonprime if it is not a prime attribute— that is, if it is not a member of any candidate key.
+
+#### First Normal Form
+
+- First normal form \(1NF\)is now considered to be part of the formal definition of a relation in the basic \(flat\) relational model; historically, it was defined to disallow multivalued attributes, composite attributes, and their combinations
+- It states that the domain of an attribute must include only atomic values and that the value of any attribute in a tuple must be a single value from the domain of that attribute
+- Hence, 1NF disallows having a set of values, a tuple of values, or a combination of both as an attribute value for a single tuple
+
+First normal form also disallows multivalued attributes that are themselves composite. These are called nested relations because each tuple can have a relation within it.
+
+**partial key** : within a nested relation each value of this attribute must be unique
+
+#### Second Normal Form
+
+Second normal form \(2NF\) is based on the concept of full functional dependency. A functional dependency X → Y is a full functional dependency if removal of any attribute A from X means that the dependency does not hold anymore.
+
+**Definition** : A relation schema R is in 2NF if every nonprime attribute A in R is fully functionally dependent on the primary key of R
+
+A functional dependency X → Y is a partial dependency if some attribute A ε X can be removed from X and the dependency still holds.
+
+If a relation schema is not in 2NF, it can be second normalized or 2NF normalized into a number of 2NF relations in which nonprime attributes are associated only with the part of the primary key on which they are fully functionally dependent.
+
+#### Third Normal Form
+
+Third normal form \(3NF\) is based on the concept of transitive dependency . A functional dependency X → Y in a relation schema R is a transitive dependency if there exists a set of attributes Z in R that is neither a candidate key nor a subset of any key of R , 11 and both X → Z and Z → Y hold.
+
+**Definition** : According to Codd’s original definition, a relation schema R is in 3NF if it satisfies 2NF and no nonprime attribute of R is transitively dependent on the primary key
+
+- Intuitively, we can see that any functional dependency in which the left\-hand side is part \(a proper subset\) of the primary key, or any functional dependency in which the left-hand side is a nonkey attribute, is a problematic FD
+- 2NF and 3NF normalization remove these problem FDs by decomposing the original relation into new relations
+- In terms of the normalization process, it is not necessary to remove the partial dependencies before the transitive dependencies, but historically, 3NF has been defined with the assumption that a relation is tested for 2NF first before it is tested for 3NF
+
+#### General Definition of Second Normal Form 
+
+**Definition** : A relation schema R is in second normal form (2NF) if every nonprime attribute A in R is not partially dependent on any key of R
+
+- The test for 2NF involves testing for functional dependencies whose left-hand side attributes are part of the primary key
+- If the primary key contains a single attribute, the test need not be applied at all
+
+#### General Definition of Third Normal Form
+
+**Definition** : A relation schema R is in third normal form \(3NF\) if, whenever a nontrivial functional dependency X → A holds in R , either \(a\) X is a superkey of R , or \(b\) A is a prime attribute of R
+
+#### Interpreting the General Definition of Third Normal Form
+
+A relation schema R violates the general definition of 3NF if a functional dependency X → A holds in R that meets either of the two conditions:
+- A nonprime attribute determines another nonprime attribute. Here we typically have a transitive dependency that violates 3NF
+- A proper subset of a key of R functionally determines a nonprime attribute. Here we have a partial dependency that violates 2NF
+
+**Alternative Definition** 
+
+A relation schema R is in 3NF if every nonprime attribute of R meets both of the following conditions:
+- It is fully functionally dependent on every key of R
+- It is nontransitively dependent on every key of R
+
+#### Boyce\-Codd Normal Form
+
+- Boyce\-Codd normal form \(BCNF\) was proposed as a simpler form of 3NF, but it was found to be stricter than 3NF
+- Every relation in BCNF is also in 3NF; however, a relation in 3NF is not necessarily in BCNF
+
+We pointed out in the last subsection that although 3NF allows functional dependencies that conform to the clause \(b\) in the 3NF definition, BCNF disallows them and hence is a stricter definition of a normal form.
+
+**Definition** : A relation schema R is in BCNF if whenever a nontrivial functional dependency X → A holds in R, then X is a superkey of R
+
+- The formal definition of BCNF differs from the definition of 3NF in that clause \(b\) of 3NF, which allows f.d.’s having the RHS as a prime attribute, is absent from BCNF
+- That makes BCNF a stronger normal form compared to 3NF
+- In practice, most relation schemas that are in 3NF are also in BCNF
+- Only if there exists some f.d. X → A that holds in a relation schema R with X not being a superkey and A being a prime attribute will R be in 3NF but not in BCNF
+
+#### Decomposition of Relations not in BCNF
+
+A simple test comes in handy to test the binary decomposition of a relation into two relations:
+
+**NJB \(Nonadditive Join Test for Binary Decompositions\)** : A decomposition D = \{R<sub>1</sub> , R<sub>2</sub>\} of R has the lossless \(nonadditive\) join property with respect to a set of functional dependencies F on R if and only if either:
+- The FD \(\( R<sub>1</sub> ∩ R<sub>2</sub>\) → \( R<sub>1</sub> − R<sub>2</sub>)) is in F<sup>+15</sup>
+- The FD \(\( R 1 ∩ R 2 \) → \( R 2 − R 1 \)\) is in F<sup>+</sup>
+
+In general, a relation R not in BCNF can be decomposed so as to meet the nonadditive join property by the following procedure. It decomposes R successively into a set of relations that are in BCNF:
+
+Let R be the relation not in BCNF, let X ⊆ R , and let X → A be the FD that causes a violation of BCNF. R may be decomposed into two relations:
+- R \-A
+- XA
+
+_If either R \–A or XA . is not in BCNF, repeat the process._
+
+### Selected Notes from Book 2
+
+#### Computing the Closure of Attributes
+
+Consider the following:
+- There is a set of sttributes \{A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub>\}
+- S is a set of FDs
+- The closure of the set of attributes under the FDs in S is the set of attributes B such that every relation that satisfied all the FDs in S also satisfies:
+
+A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> → B
+
+We denote the closure of a set of attributes as {<Attributes>}<sup>+</sup>
+
+**Algorithm for the closure of a set of attributes**
+
+- If necessary, split the FD’s of S, so each FD in S has a single attribute on the right
+- Let X be a set of attributes that eventually will become the closure. Initialize X to be \{A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub>\}
+- Repeatedly search for some FD:
+
+B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub> → C
+
+Such that all of B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub> are in the set of attributes X but C is not.
+
+- Add C to the set X and repeat
+- Since X can only grow, and the number of attributes of any relation schema must be finite, eventually nothing more can be added to X, and this step ends
+
+The set X, after no more attributes can be added to it, is the correct value of \{A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub>\}<sup>+</sup>.
+
+#### The Transistive Rule
+
+The transitive rule lets us cascade two FD’s, and generalizes the observation:
+
+- If A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> → B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub> and B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub> → C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub> hold in relation R, then A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> → C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub> also holds in R
+
+Notice that {A1,A2,...,An}+ is the set of all attributes of a relation if and only if A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> is a superkey for the relation. For only then does A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> functionally determine all the other attributes. We can test if A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> is a key for a relation by checking first that \{A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub>\}<sup>+</sup> is all attributes, and then checking that, for no set X formed by removing one attribute from \{A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub>\},is X<sup>+</sup> the set of all attributes.
+
+#### Closing Sets of Functional Dependencies
+
+**basis** : If we are given a set of FD’s S \(such as the FD’s that hold in a given relation\), then any set of FD’s equivalent to S is said to be a basis for S
+
+A minimal basis for a relation is a basis B that satisfies three conditions:
+- All the FD’s in B have singleton right sides
+- If any FD is removed from B, the result is no longer a basis
+- If for any FD in B we remove one or more attributes from the left side of F, the result is no longer a basis
+
+#### A Complete Set of Inference Rules
+
+- **Reflexivity** : If \{B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub>\} ⊆ \{A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub>\}, then A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> → B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub>. These are what we have called trivial FD’s
+- **Augmentation** : If A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> → B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub>, then:
+
+A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub>C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub> → B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub>C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub>
+
+For any set of attributes C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub>. Since some of the C’s may also be A’s or B’s or both, we should eliminate from the left side duplicate attributes and do the same for the right side.
+
+- **Transitivity** : If A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> → B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub> and B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub> → C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub> then A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> → C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub>
+
+
