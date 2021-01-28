@@ -1070,4 +1070,319 @@ For any set of attributes C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub>. Sinc
 
 - **Transitivity** : If A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> → B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub> and B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>m</sub> → C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub> then A<sub>1</sub>, A<sub>2</sub>, ..., A<sub>n</sub> → C<sub>1</sub>, C<sub>2</sub>, ..., C<sub>k</sub>
 
+# Week 3
+## Reading
+### Chapter 6: Basic SQL
+
+**SQL** : Structured query language
+
+* SQL is a comprehensive database language
+	* It has statements for data definitions, queries, and update
+	* Hence, it is both a DDL and a DML
+	* In addition, it has facilities for defining views on the database, for specifying security and authorization, for defining integrity constraints, and for specifying transaction controls
+
+#### SQL Data Definition and Data Types
+
+* SQL uses the terms table, row, and column for the formal relational model terms relation, tuple, and attribute, respectively
+* The main SQL command for data definition is the CREATE statement, which can be used to create schemas, tables \(relations\), types, and domains, as well as other constructs such as views, assertions, and triggers
+
+#### Schema and Catalog Concepts in SQL
+
+* An SQL schema is identified by a schema name and includes an authorization identifier to indicate the user or account who owns the schema, as well as descriptors for each element in the schema
+* Schema elements include tables, types, constraints, views, domains, and other constructs \(such as authorization grants\) that describe the schema
+* A schema is created via the CREATE SCHEMA statement, which can include all the schema elements’ definitions
+* Alternatively, the schema can be assigned a name and authorization identifier, and the elements can be defined later
+
+* In general, not all users are authorized to create schemas and schema elements
+* The privilege to create schemas, tables, and other constructs must be explicitly granted to the relevant user accounts by the system administrator or DBA
+
+* In addition to the concept of a schema, SQL uses the concept of a catalog
+	* a named collection of schemas
+* Database installations typically have a default environment and schema, so when a user connects and logs in to that database installation, the user can refer directly to tables and other constructs within that schema without having to specify a particular schema name
+* A catalog always contains a special schema called INFORMATION_SCHEMA, which provides information on all the schemas in the catalog and all the element descriptors in these schemas
+* Integrity constraints such as referential integrity can be defined between relations only if they exist in schemas within the same catalog. Schemas within the same catalog can also share certain elements, such as type and domain definitions
+
+#### The CREATE TABLE Command in SQL
+
+* The CREATE TABLE command is used to specify a new relation by giving it a name and specifying its attributes and initial constraints
+	* The attributes are specified first, and each attribute is given a name
+	* A data type to specify its domain of values
+	* possibly attribute constraints, such as NOT NULL
+* The key, entity integrity, and referential integrity constraints can be specified within the CREATE TABLE statement after the attributes are declared
+	* or they can be added later using the ALTER TABLE command
+* Typically, the SQL schema in which the relations are declared is implicitly specified in the environment in which the CREATE TABLE statements are executed
+	* Alternatively, we can explicitly attach the schema name to the relation name, separated by a period
+* The relations declared through CREATE TABLE statements are called base tables \(or base relations\)
+	* this means that the table and its rows are actually created and stored as a file by the DBMS
+	* Base relations are distinguished from virtual relations, created through the CREATE VIEW statement _which may not correspond to a physical file_
+	* In SQL, the attributes in a base table are considered to be ordered in the sequence in which they are specified in the CREATE TABLE statement
+	* However, rows \(tuples\) are not considered to be ordered within a table \(relation\)
+
+#### Attribute Data Types and Domains in SQL
+
+**The basic data types available for attributes include numeric, character string, bit string, Boolean, date, and time:**  
+* Numeric data types include integer numbers of various sizes \(INTEGER or INT , and SMALLINT\) and floating-point \(real\) numbers of various precision \(FLOAT or REAL, and DOUBLE PRECISION\)
+	* Formatted numbers can be declared by using DECIMAL \(i, j\) — or DEC \(i, j\) or NUMERIC \(i, j\)
+	* Where i, the precision, is the total number of decimal digits
+	* and j, the scale, is the number of digits after the decimal point
+	* The default for scale is zero, and the default for precision is implementation\-defined
+* Character\-string data types are either fixed length— CHAR \(n\) or CHARACTER \(n\) 
+	* where n is the number of characters
+	* or varying length — VARCHAR \(n\) or CHAR VARYING \(n\) or CHARACTER VARYING \(n\)
+	* where n is the maximum number of characters
+	* When specifying a literal string value, it is placed between single quotation marks, and it is case sensitive
+	* For fixed length strings, a shorter string is padded with blank characters to the right
+	* Padded blanks are generally ignored when strings are compared
+	* For comparison purposes, strings are considered ordered in alphabetic \(or lexicographic\) order
+	* Another variable\-length string data type called CHARACTER LARGE OBJECT or CLOB is also available to specify columns that have large text values, such as documents
+* Bit\-string data types are either of fixed length n — BIT\(n\) or or varying length — BIT VARYING \(n\), where n is the maximum number of bits
+	* The default for n, the length of a character string or bit string, is 1
+	* Literal bit strings are placed between single quotes but preceded by a B to distinguish them from character strings; for example, B ‘10101’
+	* Another variable\-length bitstring data type called BINARY LARGE OBJECT or BLOB is also available to specify columns that have large binary values, such as images
+* A Boolean data type has the traditional values of TRUE or FALSE
+	* In SQL, because of the presence of NULL values, a three\-valued logic is used
+	* so a third possible value for a Boolean data type is UNKNOWN
+* The DATE data type has ten positions, and its components are YEAR, MONTH, and DAY in the form YYYY\-MM\-DD
+	* The TIME data type has at least eight positions, with the components HOUR , MINUTE , and SECOND in the form HH:MM:SS
+	* A TIME WITH TIME ZONE data type includes an additional six positions for specifying the displacement from the standard universal time zone
+	* Only valid dates and times should be allowed by the SQL implementation
+
+**Some additional data types are discussed below. The list of types discussed here is not exhaustive; different implementations have added more data types to SQL:**  
+* A timestamp data type \(TIMESTAMP\) includes the DATE and TIME fields, plus a minimum of six positions for decimal fractions of seconds and an optional WITH TIME ZONE qualifier
+* Another data type related to DATE , TIME , and TIMESTAMP is the INTERVAL data type
+	* This specifies an interval — a relative value that can be used to increment or decrement an absolute value of a date, time, or timestamp
+	* Intervals are qualified to be either YEAR/MONTH intervals or DAY/TIME intervals
+
+* It is possible to specify the data type of each attribute directly, alternatively, a domain can be declared, and the domain name can be used with the attribute specification
+	* This makes it easier to change the data type for a domain that is used by numerous attributes in a schema, and improves schema readability
+* In SQL, there is also a CREATE TYPE command
+	* which can be used to create user defined types or UDTs
+	* These can then be used either as data types for attributes, or as the basis for creating tables
+
+#### Specifying Attribute Constraints and Attribute Defaults
+
+* Because SQL allows NULLs as attribute values, a constraint NOT NULL may be specified if NULL is not permitted for a particular attribute
+	* This is always implicitly specified for the attributes that are part of the primary key of each relation, but it can be specified for any other attributes whose values are required not to be NULL
+* It is also possible to define a default value for an attribute by appending the clause DEFAULT <\value\> to an attribute definition
+	* The default value is included in any new tuple if an explicit value is not provided for that attribute
+	* If no default clause is specified, the default default value is NULL for attributes that do not have the NOT NULL constraint
+* Another type of constraint can restrict attribute or domain values using the CHECK clause following an attribute or domain definition
+	* The CHECK clause can also be used in conjunction with the CREATE DOMAIN statement
+
+#### Specifying Key and Referential Integrity Constraints
+
+* Because keys and referential integrity constraints are very important, there are special clauses within the CREATE TABLE statement to specify them
+* The PRIMARY KEY clause specifies one or more attributes that make up the primary key of a relation
+	* If a primary key has a single attribute, the clause can follow the attribute directly
+* The UNIQUE clause specifies alternate \(unique\) keys, also known as candidate keys
+	* The UNIQUE clause can also be specified directly for a unique key if it is a single attribute
+* Referential integrity is specified via the FOREIGN KEY clause
+	* a referential integrity constraint can be violated when tuples are inserted or deleted, or when a foreign key or primary key attribute value is updated
+	* The default action that SQL takes for an integrity violation is to reject the update operation that will cause a violation, which is known as the RESTRICT option
+	* However, the schema designer can specify an alternative action to be taken by attaching a referential triggered action clause to any foreign key constraint
+	* The options include SET NULL , CASCADE , and SET DEFAULT . An option must be qualified with either ON DELETE or ON UPDATE
+* In general, the action taken by the DBMS for SET NULL or SET DEFAULT is the same for both ON DELETE and ON UPDATE :
+	* The value of the affected referencing attributes is changed to NULL for SET NULL and to the specified default value of the referencing attribute for SET DEFAULT
+	* The action for CASCADE ON DELETE is to delete all the referencing tuples, whereas the action for CASCADE ON UPDATE is to change the value of the referencing foreign key attribute\(s\) to the updated \(new\) primary key value for all the referencing tuples
+
+#### Giving Names to Constraints
+
+* A constraint may be given a constraint name, following the keyword CONSTRAINT
+	* The names of all constraints within a particular schema must be unique
+	* A constraint name is used to identify a particular constraint in case the constraint must be dropped later and replaced with another constraint
+	* Giving names to constraints is optional. It is also possible to temporarily defer a constraint until the end of a transaction
+
+#### Specifying Constraints on Tuples Using CHECK
+
+* In addition to key and referential integrity constraints, which are specified by special keywords, other table constraints can be specified through additional CHECK clauses at the end of a CREATE TABLE statement
+	* These can be called row\-based constraints because they apply to each row individually and are checked whenever a row is inserted or modified
+	* The CHECK clause can also be used to specify more general constraints using the CREATE ASSERTION statement of SQL
+
+#### Basic Retrieval Queries in SQL
+
+* SQL has one basic statement for retrieving information from a database: the SELECT statement
+	* The SELECT statement is not the same as the SELECT operation of relational algebra
+* SQL allows a table \(relation\) to have two or more tuples that are identical in all their attribute values
+	* Hence, in general, an SQL table is not a set of tuples, because a set does not allow two identical members; rather, it is a multiset \(sometimes called a bag\) of tuples
+* Some SQL relations are constrained to be sets because a key constraint has been declared or because the DISTINCT option has been used with the SELECT statement
+
+#### The SELECT\-FROM\-WHERE Structure of Basic SQL Queries
+
+* The basic form of the SELECT statement, sometimes called a mapping or a select\-from\-where block, is formed of the three clauses SELECT, FROM, and WHERE
+	* attribute list : is a list of attribute names whose values are to be retrieved by the query
+	* table list : is a list of the relation names required to process the query
+	* condition : is a conditional \(Boolean\) expression that identifies the tuples to be retrieved by the query
+* A query that involves only selection and join conditions plus projection attributes is known as a select\-project\-join query
+
+#### Ambiguous Attribute Names, Aliasing, Renaming, and Tuple Variables
+
+* In SQL, the same name can be used for two \(or more\) attributes as long as the attributes are in different tables
+	* If this is the case, and a multitable query refers to two or more attributes with the same name, we must qualify the attribute name with the relation name to prevent ambiguity
+	* This is done by prefixing the relation name to the attribute name and separating the two by a period
+* We can use alias\-naming or renaming mechanism in any SQL query to specify tuple variables for every table in the WHERE clause, whether or not the same relation needs to be referenced more than once
+
+#### Unspecified WHERE Clause and Use of the Asterisk
+
+* A missing WHERE clause indicates no condition on tuple selection; hence, all tuples of the relation specified in the FROM clause qualify and are selected for the query result
+* If more than one relation is specified in the FROM clause and there is no WHERE clause, then the CROSS PRODUCT — all possible tuple combinations — of these relations is selected
+	* It is extremely important to specify every selection and join condition in the WHERE clause; if any such condition is overlooked, incorrect and very large relations may result
+* To retrieve all the attribute values of the selected tuples, we do not have to list the attribute names explicitly in SQL; we just specify an asterisk \(\*\), which stands for all the attributes
+
+#### Tables as Sets in SQL
+
+**SQL does not automatically eliminate duplicate tuples in the results of queries, for the following reasons:**  
+* Duplicate elimination is an expensive operation. One way to implement it is to sort the tuples first and then eliminate duplicates
+* The user may want to see duplicate tuples in the result of a query
+* When an aggregate function is applied to tuples, in most cases we do not want to eliminate duplicates
+
+* An SQL table with a key is restricted to being a set, since the key value must be distinct in each tuple
+	* If we do want to eliminate duplicate tuples from the result of an SQL query, we use the keyword DISTINCT in the SELECT clause, meaning that only distinct tuples should remain in the result
+	* In general, a query with SELECT DISTINCT eliminates duplicates, whereas a query with SELECT ALL does not
+	* Specifying SELECT with neither ALL nor DISTINCT is equivalent to SELECT ALL
+
+* SQL has directly incorporated some of the set operations from mathematical set theory, which are also part of relational algebra
+	* There are set union \(UNION\), set difference \(EXCEPT\), and set intersection \(INTERSECT\) operations
+	* The relations resulting from these set operations are sets of tuples; that is, duplicate tuples are eliminated from the result
+	* These set operations apply only to typecompatible relations, so we must make sure that the two relations on which we apply the operation have the same attributes and that the attributes appear in the same order in both relations
+* SQL also has corresponding multiset operations, which are followed by the keyword ALL \(UNION ALL, EXCEPT ALL, INTERSECT ALL\)
+	* Their results are multisets \(duplicates are not eliminated\)
+
+#### Substring Pattern Matching and Arithmetic Operators
+
+* One feature of SQL allows comparison conditions on only parts of a character string, using the LIKE comparison operator
+	* This can be used for string pattern matching
+	* Partial strings are specified using two reserved characters: % replaces an arbitrary number of zero or more characters, and the underscore \(\_\) replaces a single character
+* If an underscore or % is needed as a literal character in the string, the character should be preceded by an escape character, which is specified after the string using the keyword ESCAPE 
+* Also, we need a rule to specify apostrophes or single quotation marks \(‘ ’\) if they are to be included in a string because they are used to begin and end strings
+	* If an apostrophe \(’\) is needed, it is represented as two consecutive apostrophes \(”\) so that it will not be interpreted as ending the string
+
+* Another feature allows the use of arithmetic in queries
+	* The standard arithmetic operators for addition \(\+\), subtraction \(\−\), multiplication \(\*\), and division \(/\) can be applied to numeric values or attributes with numeric domains
+	* For string data types, the concatenate operator \|\| can be used in a query to append two string values
+	* For date, time, timestamp, and interval data types, operators include incrementing \(\+\) or decrementing \(−\) a date, time, or timestamp by an interval
+	* In addition, an interval value is the result of the difference between two date, time, or timestamp values
+* Another comparison operator, which can be used for convenience, is BETWEEN specifying a range of values
+
+#### Ordering of Query Results
+
+* SQL allows the user to order the tuples in the result of a query by the values of one or more of the attributes that appear in the query result, by using the ORDER BY clause
+	* The default order is in ascending order of values
+	* We can specify the keyword DESC if we want to see the result in a descending order of values
+	* The keyword ASC can be used to specify ascending order explicitly 
+
+#### Discussion and Summary of Basic SQL Retrieval Queries
+
+* A simple retrieval query in SQL can consist of up to four clauses, but only the first two — SELECT and FROM — are mandatory
+	* The SELECT clause lists the attributes to be retrieved, and the FROM clause specifies all relations \(tables\) needed in the simple query
+	* The WHERE clause identifies the conditions for selecting the tuples from these relations
+	* ORDER BY specifies an order for displaying the results of a query
+
+#### The INSERT Command
+
+* In its simplest form, INSERT is used to add a single tuple \(row\) to a relation \(table\)
+	* We must specify the relation name and a list of values for the tuple. The values should be listed in the same order in which the corresponding attributes were specified in the CREATE TABLE command
+* A second form of the INSERT statement allows the user to specify explicit attribute names that correspond to the values provided in the INSERT command
+	* This is useful if a relation has many attributes but only a few of those attributes are assigned values in the new tuple
+	* However, the values must include all attributes with NOT NULL specification and no default value
+	* Attributes with NULL allowed or DEFAULT values are the ones that can be left out
+* It is also possible to insert into a relation multiple tuples separated by commas in a single INSERT command
+* A variation of the INSERT command inserts multiple tuples into a relation in conjunction with creating the relation and loading it with the result of a query
+
+#### The DELETE Command
+
+* The DELETE command removes tuples from a relation
+* It includes a WHERE clause, similar to that used in an SQL query, to select the tuples to be deleted
+* However, the deletion may propagate to tuples in other relations if referential triggered actions are specified in the referential integrity constraints of the DDL
+* Depending on the number of tuples selected by the condition in the WHERE clause, zero, one, or several tuples can be deleted by a single DELETE command
+* We must use the DROP TABLE command to remove the table definition
+
+#### The UPDATE Command
+
+* The UPDATE command is used to modify attribute values of one or more selected tuples
+	* As in the DELETE command, a WHERE clause in the UPDATE command selects the tuples to be modified from a single relation
+	* However, updating a primary key value may propagate to the foreign key values of tuples in other relations if such a referential triggered action is specified in the referential integrity constraints of the DDL
+	* An additional SET clause in the UPDATE command specifies the attributes to be modified and their new values
+	* Several tuples can be modified with a single UPDATE command
+	* It is also possible to specify NULL or DEFAULT as the new attribute value
+
+#### Additional Features of SQL
+
+**SQL has a number of additional features that we have not described in this chapter but that we discuss elsewhere in the book. These are as follows:**  
+* SQL has various techniques for writing programs in various programming languages that include SQL statements to access one or more databases
+	* embedded \(and dynamic\) SQL, SQL/CLI \(Call Level Interface\) and its predecessor ODBC \(Open Data Base Connectivity\), and SQL/PSM \(Persistent Stored Modules\)
+* Each commercial RDBMS will have, in addition to the SQL commands, a set of commands for specifying physical database design parameters, file structures for relations, and access paths such as indexes
+	* We called these commands a storage definition language \(SDL\)
+* SQL has transaction control commands
+	* These are used to specify units of database processing for concurrency control and recovery purposes
+* SQL has language constructs for specifying the granting and revoking of privileges to users
+	* Privileges typically correspond to the right to use certain SQL commands to access certain relations
+	* Each relation is assigned an owner, and either the owner or the DBA staff can grant to selected users the privilege to use an SQL statement — such as SELECT , INSERT , DELETE , or UPDATE — to access the relation
+	* In addition, the DBA staff can grant the privileges to create schemas, tables, or views to certain users
+* SQL has language constructs for creating triggers
+	* These are generally referred to as active database techniques, since they specify actions that are automatically triggered by events such as database updates
+* SQL has incorporated many features from object\-oriented models to have more powerful capabilities, leading to enhanced relational systems known as object\-relational
+* SQL and relational databases can interact with new technologies such as XML and OLAP/data warehouses
+
+### More SQL: Complex Queries, Triggers, Views, and Schema Modification
+
+#### Comparisons Involving NULL and Three\-Valued Logic
+
+* SQL has various rules for dealing with NULL values
+* NULL is used to represent a missing value, but that it usually has one of three different interpretations:
+	* value unknown \(value exists but is not known, or it is not known whether or not the value exists\)
+	* value not available \(value exists but is purposely withheld\)
+	* value not applicable \(the attribute does not apply to this tuple or is undefined for this tuple\)
+
+_It is often not possible to determine which of the meanings is intended; for example, a NULL for the home phone of a person can have any of the three meanings. Hence, SQL does not distinguish among the different meanings of NULL._
+
+* In general, each individual NULL value is considered to be different from every other NULL value in the various database records
+* When a record with NULL in one of its attributes is involved in a comparison operation, the result is considered to be UNKNOWN \(it may be TRUE or it may be FALSE\)
+* Hence, SQL uses a three-valued logic with values TRUE , FALSE , and UNKNOWN instead of the standard two\-valued \(Boolean\) logic with values TRUE or FALSE
+
+* In select\-project\-join queries, the general rule is that only those combinations of tuples that evaluate the logical expression in the WHERE clause of the query to TRUE are selected
+	* Tuple combinations that evaluate to FALSE or UNKNOWN are not selected
+	*  However, there are exceptions to that rule for certain operations, such as outer joins
+
+* SQL allows queries that check whether an attribute value is NULL
+	* Rather than using = or <\> to compare an attribute value to NULL, SQL uses the comparison operators IS or IS NOT
+
+#### Nested Queries, Tuples, and Set/Multiset Comparisons
+
+* Some queries require that existing values in the database be fetched and then used in a comparison condition
+	* Such queries can be conveniently formulated by using nested queries, which are complete select\-from\-where blocks within another SQL query
+	* That other query is called the outer query
+	* These nested queries can also appear in the WHERE clause or the FROM clause or the SELECT clause or other SQL clauses as needed
+* If a nested query returns a single attribute and a single tuple, the query result will be a single \(scalar\) value
+	* In such cases, it is permissible to use = instead of IN for the comparison operator
+* In addition to the IN operator, a number of other comparison operators can be used to compare a single value v \(typically an attribute name\) to a set or multiset v \(typically a nested query\)
+	* The = ANY \(or = SOME\) operator returns TRUE if the value v is equal to some value in the set V and is hence equivalent to IN
+	* The two keywords ANY and SOME have the same effect
+	* Other operators that can be combined with ANY \(or SOME\) include \>, \>=, <, <=, and <\>
+	* The keyword ALL can also be combined with each of these operators
+
+* In general, we can have several levels of nested queries
+	* We can once again be faced with possible ambiguity among attribute names if attributes of the same name exist — one in a relation in the FROM clause of the outer query, and another in a relation in the FROM clause of the nested query
+	* The rule is that a reference to an unqualified attribute refers to the relation declared in the inner most nested query
+
+#### Correlated Nested Queries
+
+* Whenever a condition in the WHERE clause of a nested query references some attribute of a relation declared in the outer query, the two queries are said to be correlated
+* In general, a query written with nested select-from-where blocks and using the = or IN comparison operators can always be expressed as a single block query
+
+#### The EXISTS and UNIQUE Functions in SQL
+
+* EXISTS and UNIQUE are Boolean functions that return TRUE or FALSE; hence, they can be used in a WHERE clause condition
+	* The EXISTS function in SQL is used to check whether the result of a nested query is empty \(contains no tuples\) or not
+	* The result of EXISTS is a Boolean value TRUE if the nested query result contains at least one tuple, or FALSE if the nested query result contains no tuples
+* EXISTS and NOT EXISTS are typically used in conjunction with a correlated nested query
+* There is another SQL function, UNIQUE \(Q\), which returns TRUE if there are no duplicate tuples in the result of query Q; otherwise, it returns FALSE
+	* This can be used to test whether the result of a nested query is a set \(no duplicates\) or a multiset \(duplicates exist\)
+
+#### Explicit Sets and Renaming in SQL
+
+* We have seen several queries with a nested query in the WHERE clause
+	* It is also possible to use an explicit set of values in the WHERE clause, rather than a nested query
+	* Such a set is enclosed in parentheses in SQL
+* In SQL, it is possible to rename any attribute that appears in the result of a query by adding the qualifier AS followed by the desired new name
+	* Hence, the AS construct can be used to alias both attribute and relation names in general, and it can be used in appropriate parts of a query
 
