@@ -1386,3 +1386,232 @@ _It is often not possible to determine which of the meanings is intended; for ex
 * In SQL, it is possible to rename any attribute that appears in the result of a query by adding the qualifier AS followed by the desired new name
 	* Hence, the AS construct can be used to alias both attribute and relation names in general, and it can be used in appropriate parts of a query
 
+## Week 4
+### Reading: Chapter 7
+#### Comparisons Involving NULL and Three\-Valued Logic
+
+* SQL has various rules for dealing with NULL values
+* Consider the following examples to illustrate each of the meanings of NULL:
+	* **Unknown value** : A person’s date of birth is not known, so it is represented by NULL in the database. An example of the other case of unknown would be NULL for a person’s home phone because it is not known whether or not the person has a home phone
+	* **Unavailable or withheld value** : A person has a home phone but does not want it to be listed, so it is withheld and represented as NULL in the database
+	* **Not applicable attribute** : An attribute LastCollegeDegree would be NULL for a person who has no college degrees because it does not apply to that person
+* In general, each individual NULL value is considered to be different from every other NULL value in the various database records
+* Note that in standard Boolean logic, only TRUE or FALSE values are permitted; there is no UNKNOWN value
+
+* In select\-project\-join queries, the general rule is that only those combinations of tuples that evaluate the logical expression in the WHERE clause of the query to TRUE are selected
+* Tuple combinations that evaluate to FALSE or UNKNOWN are not selected
+* SQL allows queries that check whether an attribute value is NULL
+	* Rather than using = or <\> to compare an attribute value to NULL , SQL uses the comparison operators IS or IS NOT
+	* This is because SQL considers each NULL value as being distinct from every other NULL value, so equality comparison is not appropriate
+* It follows that when a join condition is specified, tuples with NULL values for the join attributes are not included in the result
+
+#### Nested Queries, Tuples, and Set/Multiset Comparisons
+
+* Some queries require that existing values in the database be fetched and then used in a comparison condition
+* Such queries can be conveniently formulated by using nested queries , which are complete select\-from\-where blocks within another SQL query
+* That other query is called the outer query
+* These nested queries can also appear in the WHERE clause or the FROM clause or the SELECT clause or other SQL clauses as needed
+* If a nested query returns a single attribute and a single tuple, the query result will be a single \( scalar \) value
+	* In such cases, it is permissible to use = instead of IN for the comparison operator
+	* In general, the nested query will return a table \(relation\), which is a set or multiset of tuples
+* SQL allows the use of tuples of values in comparisons by placing them within parentheses
+
+* In addition to the IN operator, a number of other comparison operators can be used to compare a single value v \(typically an attribute name\) to a set or multiset v \(typically a nested query\)
+* The = ANY \(or = SOME\) operator returns TRUE if the value v is equal to some value in the set V and is hence equivalent to IN
+* The comparison condition \( v \> ALL V \) returns TRUE if the value v is greater than all the values in the set \(or multiset\) V
+
+* In general, we can have several levels of nested queries:
+	* We can once again be faced with possible ambiguity among attribute names if attributes of the same name exist— one in a relation in the FROM clause of the outer query, and another in a relation in the FROM clause of the nested query
+	* The rule is that a reference to an unqualified attribute refers to the relation declared in the innermost nested query
+
+#### Correlated Nested Queries
+
+* Whenever a condition in the WHERE clause of a nested query references some attribute of a relation declared in the outer query, the two queries are said to be correlated
+	* We can understand a correlated query better by considering that the nested query is evaluated once for each tuple \(or combination of tuples\) in the outer query
+	* In general, a query written with nested select\-from\-where blocks and using the = or IN comparison operators can always be expressed as a single block query
+
+#### The EXISTS and UNIQUE Functions in SQL
+
+* EXISTS and UNIQUE are Boolean functions that return TRUE or FALSE
+	* hence, they can be used in a WHERE clause condition
+* The EXISTS function in SQL is used to check whether the result of a nested query is empty \(contains no tuples\) or not 
+	*  The result of EXISTS is a Boolean value TRUE if the nested query result contains at least one tuple, or FALSE if the nested query result contains no tuples
+* There is another SQL function, UNIQUE, which returns TRUE if there are no duplicate tuples in the result of query Q
+	* otherwise, it returns FALSE
+	* This can be used to test whether the result of a nested query is a set \(no duplicates\) or a multiset \(duplicates exist\)
+
+#### Explicit Sets and Renaming in SQL
+
+* It is possible to use an explicit set of values in the WHERE clause, rather than a nested query
+	* Such a set is enclosed in parentheses in SQL
+* In SQL, it is possible to rename any attribute that appears in the result of a query by adding the qualifier AS followed by the desired new name
+	* Hence, the AS construct can be used to alias both attribute and relation names in general, and it can be used in appropriate parts of a query
+
+#### Joined Tables in SQL and Outer Joins
+
+* The concept of a joined table \(or joined relation\) was incorporated into SQL to permit users to specify a table resulting from a join operation in the FROM clause of a query
+* This construct may be easier to comprehend than mixing together all the select and join conditions in the WHERE clause
+* The concept of a joined table also allows the user to specify different types of join, such as NATURAL JOIN and various types of OUTER JOIN
+	* In a NATURAL JOIN on two relations R and S, no join condition is specified; an implicit EQUIJOIN condition for each pair of attributes with the same name from R and S is created
+	* Each such pair of attributes is included only once in the resulting relation
+* If the names of the join attributes are not the same in the base relations, it is possible to rename the attributes so that they match, and then to apply NATURAL JOIN
+* In this case, the AS construct can be used to rename a relation and all its attributes in the FROM clause
+* The default type of join in a joined table is called an inner join, where a tuple is included in the result only if a matching tuple exists in the other relation
+* If the user requires that all employees be included, a different type of join called OUTER JOIN must be used explicitly
+
+* In SQL, the options available for specifying joined tables include:
+	* INNER JOIN : only pairs of tuples that match the join condition are retrieved, same as JOIN
+	* LEFT OUTER JOIN : every tuple in the left table must appear in the result; if it does not have a matching tuple, it is padded with NULL values for the attributes of the right table
+	* RIGHT OUTER JOIN : every tuple in the right table must appear in the result; if it does not have a matching tuple, it is padded with NULL values for the attributes of the left table
+	* FULL OUTER JOIN
+* The keyword CROSS JOIN is used to specify the CARTESIAN PRODUCT operation
+	* this should be used only with the utmost care because it generates all possible tuple combinations
+* It is also possible to nest join specifications; that is, one of the tables in a join may itself be a joined table
+	* This allows the specification of the join of three or more tables as a single joined table, which is called a multiway join
+
+#### Aggregate Functions in SQL
+
+* Aggregate functions are used to summarize information from multiple tuples into a single\-tuple summary
+* Grouping is used to create subgroups of tuples before summarization
+* A number of built\-in aggregate functions exist:
+	* The COUNT function returns the number of tuples or values as specified in a query
+	* The functions SUM , MAX , MIN , and AVG can be applied to a set or multiset of numeric values and return, respectively, the sum, maximum value, minimum value, and average \(mean\) of those values
+	* These functions can be used in the SELECT clause or in a HAVING clause
+	* The functions MAX and MIN can also be used with attributes that have nonnumeric domains if the domain values have a total ordering among one another
+
+#### Grouping: The GROUP BY and HAVING Clauses
+
+* In many cases we want to apply the aggregate functions to subgroups of tuples in a relation, where the subgroups are based on some attribute values
+* In these cases we need to partition the relation into nonoverlapping subsets \(or groups\) of tuples
+* Each group \(partition\) will consist of the tuples that have the same value of some attribute\(s\), called the grouping attribute\(s\)
+* We can then apply the function to each such group independently to produce summary information about each group
+* SQL has a GROUP BY clause for this purpose
+	* The GROUP BY clause specifies the grouping attributes, which should also appear in the SELECT clause, so that the value resulting from applying each aggregate function to a group of tuples appears along with the value of the grouping attribute\(s\)
+* If NULL s exist in the grouping attribute, then a separate group is created for all tuples with a NULL value in the grouping attribute
+
+* Sometimes we want to retrieve the values of these functions only for groups that satisfy certain conditions
+* SQL provides a HAVING clause, which can appear in conjunction with a GROUP BY clause, for this purpose
+	* HAVING provides a condition on the summary information regarding the group of tuples associated with each value of the grouping attributes
+	* Only the groups that satisfy the condition are retrieved in the result of the query
+
+#### Other SQL Constructs: WITH and CASE
+
+* The WITH clause allows a user to define a table that will only be used in a particular query; it is somewhat similar to creating a view that will be used only in one query and then dropped
+* SQL also has a CASE construct, which can be used when a value can be different based on certain conditions
+	* This can be used in any part of an SQL query where a value is expected, including when querying, inserting or updating tuples
+* The CASE construct can also be used when inserting tuples that can have different attributes being NULL depending on the type of record being inserted into a table
+	* as when a specialization is mapped into a single table or when a union type is mapped into relations
+
+#### Recursive Queries in SQL
+
+* An example of a recursive relationship between tuples of the same type is the relationship between an employee and a supervisor
+* An example of a recursive operation is to retrieve all supervisees of a supervisory employee e at all levels — that is, all employees e′ directly supervised by e , all employees e′ directly supervised by each employee e′ , all employees e″′ directly supervised by each employee e″ , and so on
+* This is repeated with successive levels until a fixed point is reached, where no more tuples are added to the view
+
+#### Specifying Constraints as Assertions and Actions as Triggers
+
+* CREATE ASSERTION , which can be used to specify additional types of constraints that are outside the scope of the built\-in relational model constraints \(primary and unique keys, entity integrity, and referential integrity\)
+* CREATE TRIGGER , which can be used to specify automatic actions that the database system will perform when certain events and conditions occur
+	* This type of functionality is generally referred to as active databases
+
+#### Specifying General Constraints as Assertions in SQL
+
+* In SQL, users can specify general constraints— those that do not fall into any of the categories described previously via declarative assertions using the CREATE ASSERTION statement
+* Each assertion is given a constraint name and is specified via a condition similar to the WHERE clause of an SQL query
+	* this is followed by the keyword CHECK
+	* which is followed by a condition in parentheses that must hold true on every database state for the assertion to be satisfied
+* The constraint name can be used later to disable the constraint or to modify or drop it
+* Any WHERE clause condition can be used, but many constraints can be specified using the EXISTS and NOT EXISTS style of SQL conditions
+* Whenever some tuples in the database cause the condition of an ASSERTION statement to evaluate to FALSE , the constraint is violated
+
+* The basic technique for writing such assertions is to specify a query that selects any tuples that violate the desired condition
+	* By including this query inside a NOT EXISTS clause, the assertion will specify that the result of this query must be empty so that the condition will always be TRUE
+* Note that the CHECK clause and constraint condition can also be used to specify constraints on individual attributes and domains and on individual tuples 
+* A major difference between CREATE ASSERTION and the individual domain constraints and tuple constraints is that the CHECK clauses on individual attributes, domains, and tuples are checked in SQL only when tuples are inserted or updated in a specific table
+
+#### Introduction to Triggers in SQL
+
+* In many cases it is convenient to specify the type of action to be taken when certain events occur and when certain conditions are satisfied
+* For example, it may be useful to specify a condition that, if violated, causes some user to be informed of the violation.
+* A manager may want to be informed if an employee’s travel expenses exceed a certain limit by receiving a message whenever this occurs
+* The condition is thus used to monitor the database
+	* Other actions may be specified, such as executing a specific stored procedure or triggering other updates
+* The CREATE TRIGGER statement is used to implement such actions in SQL
+
+* A typical trigger which is regarded as an ECA \(Event, Condition, Action\) rule has three components:
+	* The event\(s\) : These are usually database update operations that are explicitly applied to the database. In some cases, it may be necessary to write more than one trigger to cover all possible cases. These events are specified after the keyword BEFORE in our example, which means that the trigger should be executed before the triggering operation is executed. An alternative is to use the keyword AFTER , which specifies that the trigger should be executed after the operation specified in the event is completed.
+	* The condition that determines whether the rule action should be executed: Once the triggering event has occurred, an optional condition may be evaluated. If no condition is specified, the action will be executed once the event occurs. If a condition is specified, it is first evaluated, and only if it evaluates to true will the rule action be executed. The condition is specified in the WHEN clause of the trigger.
+	* The action to be taken: The action is usually a sequence of SQL statements, but it could also be a database transaction or an external program that will be automatically executed.
+
+_Triggers can be used in various applications, such as maintaining database consistency, monitoring database updates, and updating derived data automatically._
+
+#### Concept of a View in SQL
+
+* A view in SQL terminology is a single table that is derived from other tables
+* These other tables can be base tables or previously defined views
+* A view does not necessarily exist in physical form; it is considered to be a virtual table , in contrast to base tables , whose tuples are always physically stored in the database
+	* This limits the possible update operations that can be applied to views, but it does not provide any limitations on querying a view
+* We can think of a view as a way of specifying a table that we need to reference frequently, even though it may not exist physically
+
+#### Specification of Views in SQL
+
+* In SQL, the command to specify a view is CREATE VIEW
+* The view is given a \(virtual\) table name \(or view name\), a list of attribute names, and a query to specify the contents of the view
+* If none of the view attributes results from applying functions or arithmetic operations, we do not have to specify new attribute names for the view, since they would be the same as the names of the attributes of the defining tables in the default case
+
+* A view is supposed to be always up\-to\-date
+	* if we modify the tuples in the base tables on which the view is defined, the view must automatically reflect these changes
+* Hence, the view does not have to be realized or materialized at the time of view definition but rather at the time when we specify a query on the view
+* It is the responsibility of the DBMS and not the user to make sure that the view is kept up\-to\-date
+
+* The disadvantage of this approach is that it is inefficient for views defined via complex queries that are time\-consuming to execute
+	* especially if multiple view queries are going to be applied to the same view within a short period of time
+* The second strategy, called view materialization , involves physically creating a temporary or permanent view table when the view is first queried or created and keeping that table on the assumption that other queries on the view will follow
+	* In this case, an efficient strategy for automatically updating the view table when the base tables are updated must be developed in order to keep the view up\-to\-date
+* Techniques using the concept of incremental update have been developed for this purpose, where the DBMS can determine what new tuples must be inserted, deleted, or modified in a materialized view table when a database update is applied to one of the defining base tables
+* The view is generally kept as a materialized \(physically stored\) table as long as it is being queried
+	* If the view is not queried for a certain period of time, the system may then automatically remove the physical table and recompute it from scratch when future queries reference the view
+
+* Different strategies as to when a materialized view is updated are possible:	
+	* The immediate update strategy updates a view as soon as the base tables are changed
+	* the lazy update strategy updates the view when needed by a view query
+	* the periodic update strategy updates the view periodically \(in the latter strategy, a view query may get a result that is not up\-to\-date\)
+
+* A user can always issue a retrieval query against any view
+	* However, issuing an INSERT, DELETE, or UPDATE command on a view table is in many cases not possible
+* In general, an update on a view defined on a single table without any aggregate functions can be mapped to an update on the underlying base table under certain conditions
+* For a view involving joins, an update operation may be mapped to update operations on the underlying base relations in multiple ways
+	* Hence, it is often not possible for the DBMS to determine which of the updates is intended
+
+* Generally, a view update is feasible when only one possible update on the base relations can accomplish the desired update operation on the view
+* Whenever an update on the view can be mapped to more than one update on the underlying base relations, it is usually not permitted
+
+_It is also possible to define a view table in the FROM clause of an SQL query. This is known as an in-line view . In this case, the view is defined within the query itself._
+
+#### Views as Authorization Mechanisms
+
+* Views can be used to hide certain attributes or tuples from unauthorized users
+* A view can restrict a user to only see certain columns; for example, only the first name, last name, and address of an employee may be visible
+
+#### The DROP Command
+
+* The DROP command can be used to drop named schema elements, such as tables, domains, types, or constraints
+	* One can also drop a whole schema if it is no longer needed by using the DROP SCHEMA command
+* There are two drop behavior options: CASCADE and RESTRICT
+* For example, to remove the COMPANY database schema and all its tables, domains, and other elements, the CASCADE option is used
+* If the RESTRICT option is chosen in place of CASCADE , the schema is dropped only if it has no elements in it; otherwise, the DROP command will not be executed
+	* To use the RESTRICT option, the user must first individually drop each element in the schema, then drop the schema itself
+* If the RESTRICT option is chosen instead of CASCADE , a table is dropped only if it is not referenced in any constraints
+* With the CASCADE option, all such constraints, views, and other elements that reference the table being dropped are also dropped automatically from the schema, along with the table itself
+* The DROP command can also be used to drop other types of named schema elements, such as constraints or domains
+
+#### The ALTER Command
+
+* The definition of a base table or of other named schema elements can be changed by using the ALTER command
+* For base tables, the possible alter table actions include adding or dropping a column \(attribute\), changing a column definition, and adding or dropping table constraints
+* If no default clause is specified, the new attribute will have NULL s in all the tuples of the relation immediately after the command is executed; hence, the NOT NULL constraint is not allowed in this case
+
+* To drop a column, we must choose either CASCADE or RESTRICT for drop behavior
+	* If CASCADE is chosen, all constraints and views that reference the column are dropped automatically from the schema, along with the column
+	* If RESTRICT is chosen, the command is successful only if no views or constraints \(or other schema elements\) reference the column
+* One can also change the constraints specified on a table by adding or dropping a named constraint
