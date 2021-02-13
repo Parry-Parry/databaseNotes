@@ -1615,3 +1615,186 @@ _It is also possible to define a view table in the FROM clause of an SQL query. 
 	* If CASCADE is chosen, all constraints and views that reference the column are dropped automatically from the schema, along with the column
 	* If RESTRICT is chosen, the command is successful only if no views or constraints \(or other schema elements\) reference the column
 * One can also change the constraints specified on a table by adding or dropping a named constraint
+
+## Week 5
+
+The collection of data that makes up a computerized database must be stored physically on some computer storage medium.
+
+Computer storage media form a storage hierarchy that includes two main categories:  
+* Primary storage
+	* This category includes storage media that can be operated on directly by the computer’s central processing unit \(CPU\), such as the computer’s main memory and smaller but faster cache memories
+	* Primary storage usually provides fast access to data but is of limited storage capacity
+	* Although main memory capacities have been growing rapidly in recent years, they are still more expensive and have less storage capacity than demanded by typical enterprise\-level databases
+	* The contents of main memory are lost in case of power failure or a system crash
+* Secondary storage
+	* The primary choice of storage medium for online storage of enterprise databases has been magnetic disks
+	* However, flash memories are becoming a common medium of choice for storing moderate amounts of permanent data
+	* When used as a substitute for a disk drive, such memory is called a solid\-state drive \(SSD\)
+* Tertiary storage
+	* Optical disks \(CD\-ROMs, DVDs, and other similar storage media\) and tapes are removable media used in today’s systems as offline storage for archiving databases and hence come under the category called tertiary storage
+	* These devices usually have a larger capacity, cost less, and provide slower access to data than do primary storage devices
+	* Data in secondary or tertiary storage cannot be processed directly by the CPU; first it must be copied into primary storage and then processed by the CPU
+
+#### Memory Hierarchies and Storage Devices
+
+* In a modern computer system, data resides and is transported throughout a hierarchy of storage media
+* The highest speed memory is the most expensive and is therefore available with the least capacity
+* The lowest speed memory is offline tape storage, which is essentially available in indefinite storage capacity
+* At the primary storage level, the memory hierarchy includes, at the most expensive end, cache memory , which is a static RAM 
+* Cache memory is typically used by the CPU to speed up execution of program instructions using techniques such as prefetching and pipelining
+
+* The next level of primary storage is DRAM \(dynamic RAM\), which provides the main work area for the CPU for keeping program instructions and data
+* The advantage of DRAM is its low cost, which continues to decrease; the drawback is its volatility
+
+* At the secondary and tertiary storage level, the hierarchy includes magnetic disks; mass storage in the form of CD-ROM \(compact disk – read\-only memory\) and DVD \(digital video disk or digital versatile disk\) devices; and finally tapes at the least expensive end of the hierarchy
+* Programs reside and execute in dynamic random\-access memory
+* Generally, large permanent databases reside on secondary storage \(magnetic disks\), and portions of the database are read into and written from buffers in main memory as needed
+* Nowadays, personal computers and workstations have large main memories of hundreds of megabytes of RAM and DRAM, so it is becoming possible to load a large part of the database into main memory
+
+* Flash Memory
+	* Flash memories are high\-density, high\-performance memories using EEPROM \(electrically erasable programmable read\-only memory\) technology
+	* The advantage of flash memory is the fast access speed; the disadvantage is that an entire block must be erased and written over simultaneously
+	* Flash memories come in two types called NAND and NOR flash based on the type of logic circuits used
+	* The NAND flash devices have a higher storage capacity for a given cost and are used as the data storage medium in appliances with capacities ranging from 8 GB to 64 GB for the popular cards that cost less than a dollar per GB
+* Optical Drives
+	* The most popular form of optical removable storage is CDs \(compact disks\) and DVDs
+	* CDs have a 700\-MB capacity whereas DVDs have capacities ranging from 4.5 to 15 GB. CD\-ROM\(compact disk – read only memory\) disks store data optically and are read by a laser
+	* CD\-ROMs contain prerecorded data that cannot be overwritten
+	* The version of compact and digital video disks called CD\-R \(compact disk recordable\) and DVD\-R or DVD \+ R, which are also known as WORM \(write\-once\-read\-many\) disks, are a form of optical storage used for archiving data; they allow data to be written once and read any number of times without the possibility of erasing
+	* Optical jukebox memories use an array of CD\-ROM platters, which are loaded onto drives on demand
+	* Although optical jukeboxes have capacities in the hundreds of gigabytes, their retrieval times are in the hundreds of milliseconds, quite a bit slower than magnetic disks
+	* This type of tertiary storage is continuing to decline because of the rapid decrease in cost and the increase in capacities of magnetic disks
+* Magnetic Tapes
+	* Finally, magnetic tapes are used for archiving and backup storage of data
+	*  Tape jukeboxes — which contain a bank of tapes that are catalogued and can be automatically loaded onto tape drives — are becoming popular as tertiary ­ storage to hold terabytes of data
+
+#### Storage Organization of Databases
+
+* Databases typically store large amounts of data that must persist over long periods of time, and hence the data is often referred to as persistent data
+* Parts of this data are accessed and processed repeatedly during the storage period
+* This contrasts with the notion of transient data, which persists for only a limited time during program execution
+* Most databases are stored permanently \(or persistently\) on magnetic disk secondary storage, for the following reasons:
+	* Generally, databases are too large to fit entirely in main memory
+	* The circumstances that cause permanent loss of stored data arise less frequently for disk secondary storage than for primary storage
+	* Hence, we refer to disk — and other secondary storage devices — as nonvolatile storage, whereas main memory is often called volatile storage
+	* The cost of storage per unit of data is an order of magnitude less for disk secondary storage than for primary storage
+
+#### ORGANIZATION\-BASED OPTIMIZATION
+
+* Representation 
+	* Tuple is represented as a Record
+	* Records are grouped together forming a Block
+	* Fileis a groupof blocks
+* Records can be of:
+	* Fixed length, i.e., attributes are of fixed size in bytes
+	* Variable length, i.e., the size of each attributes varies
+
+#### BLOCKING FACTOR
+
+* Block is of fixed\-length, normally 512 bytes to 4096 bytes
+* floor\(x\) is the largest integer less than or equal to x
+* The number of records stored in a block \- is called: blocking factor \(bfr\)  
+bfr = floor\(B/R\)  
+
+#### BLOCKS TO FILES ON DISK
+
+Linked allocation: Each block i has a pointer to the physical address of the logically next block i\+1 anywhere on the disk, i.e., a linked list of blocks
+
+#### FILE STRUCTURES
+
+* Heap File\(unordered file\)
+	* Principle: a new record is added to the end of the file, i.e., at the end of the last block \(append\)
+* Ordered File \(sequential file\)
+	* Principle: records are kept physically sorted w.r.t ordering field
+* Hash File
+	* Principle: a hashing function y = h\(x\) is applied to each record field x\(hash field\)
+	* The output yis the physical block address; mapping a record to a block
+
+#### EXPECTED I/O ACCESS COST
+
+* Fix a file type heap, ordered, or hash. We define I/O access cost as the cost for:
+	* Retrieving a whole block from disk to memory to search for a record w.r.t.searching field \(search cost\)
+	* Inserting/deleting/updating a record by transferring the whole block from memory to disk \(update cost\)
+* Cost Function: expected number of block accesses\(read/write\) to search/insert/delete/update a record
+
+#### HEAP FILE
+
+* Inserting a new record is efficient:
+	* Load the last block from disk to memory \(address is in file header\)
+	* Insert the new record at the end of the block and write it back to disk
+* Retrieving a record is inefficient:
+	* Linear search through all the b file blocks
+	* Load a block at a time from disk to memory; search for the record; repeat
+* Complexity: 
+	* On average: \~b/2 blocks \(best case: 1 block;  worst case: b blocks\)
+	* We access b blocks if the record is not in the file
+	* O\(b\) block accesses, does not scale well with b
+* Deleting a record is inefficient:
+	* Find and load the block containing the record; \(retrieval process\)
+	* Remove the record from the block and write the block back to disk
+	* This leaves unused spaces within blocks!
+	* Complexity: O\(b\) + O\(1\) block accesses
+	* Use deletion marker per record
+		* a bit from 0 to 1: bit = 1 indicates that a record is deleted
+		* periodically, re\-organize the file by gathering the non\-deleted records \(bit=0\) and freeing up blocks with deleted records
+
+#### SEQUENTIAL FILE
+
+* All the records are physically sorted by an ordering field and are kept sorted at all times
+* Suitable for SQL queries that:
+	* Require sequential scanning
+	* Involve ordering field in search
+	* Range queries over the ordering field
+* Retrieve a record using the ordering field; efficient
+	* The block is found using binary search on the ordering field
+	* Complexity: O\(log<sub>2</sub>b\)
+* Retrievea record using a non\-ordering field; inefficient
+	* We do not exploitthe ordering\.\.\.like a heap file
+	* Complexity: O\(b\) i.e., linear with b
+
+* Insertion is expensive
+	* First, locate the block where the record should be inserted: binary search
+	* On average, half of the records must be moved to makeroom for the new record
+* Alternative: chain pointers
+	* Principle: Each record points to the logically nextordered record
+	* If there is free space in the right block, insert the new record there
+	* Else, insert the new record in an overflow block and use chain pointers
+	* Pointers must be updated; it is a sorted\-linked list
+* Deletion is expensive
+	* First, locatethe block where the record is to be deleted; binary search
+	* Update the deletion marker from 0 to 1 and update the pointer not to point to the deleted record
+	* Periodically re\-sort the file to restore the physically sequential order \(i.e., external sorting\.\.\.expensive\)
+* Update on the ordering field is costly
+	* The record is deleted from its old position & inserted into its new position
+* Update on a non\-ordering field is efficient
+	* Complexity: O\(log<sub>2</sub>b\) + O\(1\) block accesses
+
+#### HASH FILE
+
+* Idea of Hashing
+	* Partition the records into M buckets: bucket 0, bucket 1, \.\.\., bucket M\-1
+	* Each bucket can have more than one block
+	* Choose a hash function y = h\(k\) with output y\{0, 1, \.\.\., M\-1\} for a given k
+	* Requirement: h uniformly distributes records into the buckets \{0, ..., M\-1\}, i.e., for each value k, each bucket is chosen with equal probability 1/M  
+	y = h\(k\) = k mod M
+
+#### HASH FILE CONSTRUCTION: EXTERNAL HASHING	
+
+* Mapping a record to a bucket y = h\(k\) is called external hashing over hash\-field k
+* Normally, collisions occur i.e., two or more records are mapped to the same bucket
+
+#### EXTERNAL HASHING OVERFLOW
+
+* Due to collisions, i.e., more than one record is mapped to the same bucket, the buckets might be full
+* To solve this we again use chain pointers
+
+#### EXTERNAL HASHING
+
+* Delete a record based on the hash field
+	* If record is in the mainbucket, delete it O\(1\)
+	* Else follow the chain to overflow block O\(1\) \+ O\(n\) block accesses
+	* Periodically pack together blocks of the same bucket to free up blocks with deleted records
+* Update a record based on a non\-hash field
+	* Locate record in main or overflow bucket 
+	* Load block into memory, update and write it back
+	* O\(1\) or O\(1\) \+ O\(n\) block accesses
