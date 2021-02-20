@@ -1798,3 +1798,4 @@ Linked allocation: Each block i has a pointer to the physical address of the log
 	* Locate record in main or overflow bucket 
 	* Load block into memory, update and write it back
 	* O\(1\) or O\(1\) \+ O\(n\) block accesses
+	
