@@ -1798,4 +1798,136 @@ Linked allocation: Each block i has a pointer to the physical address of the log
 	* Locate record in main or overflow bucket 
 	* Load block into memory, update and write it back
 	* O\(1\) or O\(1\) \+ O\(n\) block accesses
-	
+
+## Week 6: INDEXING METHODOLOGY
+
+#### OBJECTIVES
+
+**Index Design**  
+_Objective_: given any file type provide a secondary access path using more than one searching field, e.g.,SSN, Salary, Name, etc
+
+Cost: Additional \(meta\-data\) files on the disk & maintenance cost  
+Benefit: Expedite significantly the search process avoiding Linear Scan
+
+#### PRINCIPLES
+
+* Principle 1: sCreate one index over one field: index field
+* Principle 2: An index is an another separate file
+* Principle 3: All index entries are unique & sorted w.r.t. index field
+	* index\-entry = \(index-value, block\-pointer\)
+* Principle 4: First search with in the index to find the block\-pointer, then access the data block from the data\-file
+
+#### Hypothesis 1: Index file occupies less blocks than the data\-file
+
+* Fact: index entries are smaller records: \(index\-value,block\-pointer\)
+	* we fit in more index\-entries in a block than data\-records:
+		* bfr\(index\-file\) \> bfr\(data\-file\)
+	* Dense Index: an index entry for every record in the file
+	* Sparse Index: index entries only for some of records
+
+#### Hypothesis 2: Searching over index is faster than over file
+
+Fact: By design, index is an ordered file, thus we adopt binary\-based and/or tree\-based methods to find the pointer to the actual data\-block.
+
+#### INDEX TYPES
+
+* Primary Index: index field is ordering, key field of a sequential file, e.g., SSN; file is sorted by SSN
+* Clustering Index: index field is ordering, non\-key field of a sequential file, e.g., DNO; file is sorted by DNO
+* Secondary Index: index field is:
+	* non\-ordering, keyfield, e.g., unique passport number, over an ordered\(e.g., by SSN\) or a non\-ordered file
+	* non\-ordering, non\-key field, e.g., salary, over an ordered\(e.g., by SSN\) or non\-ordered file
+
+#### PRIMARY INDEX
+
+* An ordered file over an ordering, key k of a sequential data\-file:
+	* fixed\-length index entries := pair \(k<sub>i</sub>, p<sub>i</sub>\)
+	* k<sub>i</sub> is the uniquevalue of the index field 
+	* p<sub>i</sub> is the pointer to the i\-thblock containing the record with key k<sub>i</sub>
+* Sparseness: one index\-entry per data block
+	* i\-th index entry \(k<sub>i</sub>, p<sub>i</sub>\) refers to the i\-th data block 
+	* k<sub>i</sub> is the field value of the first record in block i
+	* The first data\-record in block i with value k<sub>i</sub> is the anchor of block i.
+
+#### CLUSTERING INDEX
+
+* Challenge: Index a sequential file on an ordering, non\-key field. e.g., create an index on EMPLOYEE  ordered by DNO \(dept. number\)
+* Idea: The file is a set of clusters of blocks; a cluster per distinct value:
+	* index\-entry := \(distinct\-value, block\-pointer\)
+
+* One index\-entry per distinct clustering value
+* Block pointer points at the first block of the cluster. The other blocks of the same cluster are contiguous and accessed via chain pointers
+
+#### DECISION MAKING
+
+When we decide to create a Clustering Index:
+
+* Theorem 1: A Clustering Index of m< b blocks is created over an ordering non\-key field iff:  
+m < 2\[b\(n\-1\)/2n\]
+
+* Theorem 2: If n→∞, i.e., infinite number of distinct values, then the linear search over an ordering non\-key field with exiting feature is bounded by b/2, i.e., half of the naïve linear search:  
+lim \[2\[b\(n\+1\)/2n\]\] for n→∞ = b/2 < b
+
+#### SECONDARY INDEX
+
+* Challenge: Index a file on a non\-ordering field. The file might be unordered, hashed, or ordered but not ordered w.r.t. the indexing field
+* Cases:
+	* \[S1\] Secondary Index on a non\-ordering, key field; e.g., SSN
+	* \[S2\] Secondary Index on a non\-ordering, non\-key field; e.g., DNO
+
+* \[S1\]: One index entry per data record, i.e., dense index
+	* the file is not ordered according to the indexing field, thus, we cannot use anchor records
+	* index\-entry := \(index\-value, block\-pointer\)
+* \[S2\]: Indexing field is a non ordering, non key
+	* Idea 1: group the block addresses of those records having the same value
+	* Idea 2: assign an index entry per group \(cluster\) of block addresses
+		* index\-entry := \(distinct\-value, cluster\-pointer\)
+
+* A cluster\-pointer points to \(2 levels of indirection\):
+	* \(Level 1\) a block of \{block\-pointers\} of a cluster
+	* \(Level 2\) a block\-pointer points to the data\-block that has records with this distinct index value
+
+#### MULTILEVEL INDEX
+
+* Observation: in all index files it holds true that:
+	* they are ordered on the indexing field
+	* the indexing field has unique\(distinct\) values
+	* each index entry is of fixed length
+
+Conclusion: we can build a primary index over any index file, since it is an ordered file w.r.t. a key field \(index of an index\)
+
+* index of an index refers to the multilevel index:
+	* the original index file is referred to as the base or Level\-1 index
+	* the additional index is referred to as Level\-2 index\(index of an index\)
+	* ...
+	* if we repeat this to level \> 2 we obtain... Level\-t index, i.e., index of an index of an index ...
+
+Challenge: Find the best level t of a multi\-level index to expedite the search process trading off speed\-up with overhead
+
+#### MULTILEVEL INDEX: REASONING
+
+Idea: log<sub>m</sub>\(b\) with m\>2 splits the search space into m sub\-spaces until finding the unique block!  
+* Splitting steps: log<sub>m</sub>\(b\) <...< log<sub>m</sub>\(b\)
+
+Theorem 3: Given a Level\-1 Index with blocking factor m entries/block, the multi\-level index is of maximum level t=log<sub>m</sub>\(b\)
+
+* m is known as fan\-out
+* Scalable Design: independent of data\-size
+* In anySQL/NoSQL System, always adopt multi\-level indexes for data access
+
+#### PROOF OF THEOREM 3
+
+* Block size B bytes; File with r records; data\-record has size s
+	* Blocking factor for the data\-file is f = floor\(B/s\) records/block
+	* Data file is b = ceil\(r / f\) data\-blocks
+* Level\-1 Primary index: each index entry points to each file\-block\(anchor\)
+	* Let l be the size of the index entry
+	* The Level\-1 index has b entries, with blocking factor m = floor \(B/l\)
+	* The Level\-1 index has b1 = ceil\(b/m\) L1\-index\-blocks
+* Level\-2 Primary index: each index entry points to each index\-block of Level\-1
+	* The Level-2 index has b1 entries, with blocking factor m=floor\(B/l\)
+	* The Level\-2 index has b2=ceil\(b1/m\)=ceil\(b/m<sup>2</sup>\) L2\-index\-blocks\(1/m<sup>2</sup>less blocks\)
+	* ...
+* Level\-t primary index: The t\-th top level will have only 1 block thus 1 ≤ \(b / m<sup>t</sup>\) or t = log<sub>m</sub>\(b\)
+	* Split the searching space into m sub\-spaces thus approx. t steps to find the desired block
+
+
