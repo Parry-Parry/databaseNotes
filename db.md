@@ -1930,4 +1930,576 @@ Theorem 3: Given a Level\-1 Index with blocking factor m entries/block, the mult
 * Level\-t primary index: The t\-th top level will have only 1 block thus 1 ≤ \(b / m<sup>t</sup>\) or t = log<sub>m</sub>\(b\)
 	* Split the searching space into m sub\-spaces thus approx. t steps to find the desired block
 
+## Week 7
+
+#### MULTILEVEL INDEX AS A TREE \[Best understood looking at slide 4 of week 7\]
+
+* Observe: 2\-level multilevel index over a non-ordering, key\(secondary index\)
+* Turn: clockwise by 90 degrees
+* View: A Tree structure:
+	* Root is the L2\-Index
+	* Root’s children are blocks of the L1\-Index
+	* Leavesare actual data blocks \(L0\)
+
+#### LIMITATION
+
+* It becomes unbalanced
+	* It does not adjust to keys’ distribution, i.e., leaf\-nodes are at different levels...
+* Worst case: a linked\-list of nodes instead of a tree structure
+* Larger tree depth t results to higher expected search time O\(t\)
+* Challenge 1: ensure balanced tree by minimizing the tree depth t
+	* Challenge 1.1: what happens if key values are inserted in a full node? \(split\)
+	* Challenge 1.2: what happens if the key value in a node is deleted? \(merge\)
+
+#### B\-TREE: INDEX ON NON\-ORDERING KEY
+
+B\-Tree Node order p: splits the searching space up to p subspaces; p \> 2
+
+* key values sorted: K<sub>1</sub> < K<sub>2</sub>  < ... < K<sub>p\-1</sub>
+* block/data pointer Q<sub>i</sub> points to the data\-block holding the value K<sub>i</sub>
+* tree pointer P<sub>i</sub> points to a sub\-tree of key values X:
+	* If i = 1, X < K<sub>1</sub> and if i = q, K<sub>q-1</sub>< X 
+	* K<sub>i-1</sub> < X < K<sub>i</sub>, for 1 < i < q
+
+#### B\-TREE
+
+* Search: Traversing the tree nodes until finding the key value
+* Rationale: Immediate access to the block of the searching key!
+
+Normally: 1 Tree Node per block
+
+Search 8: 2 block accesses; access the data block immediately  
+Search 7: 3 block accesses; access the data block immediately  
+Search 12: 3 block access plus data block access  
+Search 31: 2 block access; no record thus no need to load the block and check!
+
+#### MAXIMIZE FAN\-OUT & MINIMIZE STORAGE
+
+* Hmmm, a B\-Tree stores too much meta\-data: 
+	* data\-pointers to blocks \(addresses, e.g., URI/L average size \~1KB!\)
+	* tree\-pointers to tree nodes \(structural meta\-data\)
+	* search key values \(data values\)
+
+#### B\+ TREE: INDEX ON NON\-ORDERING KEY
+
+* B<sup>\+</sup> Tree \(give semantics to the nodes!\) 
+	* Internal Nodes; guide the searching process \(super\-fast\)
+	* Leaf Nodes; point to actual data blocks \(access point\)
+
+* Principle 1: Internal Nodes have no data\-pointers to maximize fan\-out
+* Principle 2: only Leaf Nodes hold the actual data\-pointers
+* Principle 3: Leaf Nodes hold all the key values sorted and their corresponding data\-pointers
+* Principle 4: Some key values are replicated in the Internal Nodes to guide & expedite the search process \(corresponding to medians of key values in sub\-trees\)
+
+#### B\+ TREE: INTERNALNODE
+
+* key values sorted: K<sub>1</sub> < K<sub>2</sub>  < ... < K<sub>p\-1</sub>
+* tree pointer P<sub>i</sub> points to a sub\-tree of key values X:
+	* If i = 1, X ≤ K<sub>1</sub> and if i = q, K<sub>q-1</sub> ≤ X 
+	* K<sub>i-1</sub> < X ≤ K<sub>i</sub>, for 1 < i < q
+
+* Note: Each internal node with p tree\-pointers has p\-1 key values
+
+#### B\+ TREE: LEAF NODE
+
+B<sup>\+</sup> Tree Leaf Node order p<sub>L</sub>:= \{\(K<sub>1</sub>, Q<sub>1</sub>\), \(K<sub>2</sub>, Q<sub>2</sub>\) ..., \(K<sub>pL</sub>, Q<sub>pL</sub>\), P<sub>next</sub>\}
+
+* Q<sub>i</sub> is a data\-pointer to the actual data block holding value K<sub>i</sub>
+* P<sub>next</sub> is a tree\-pointer to the next leaf node \(sibling\)
+* Linked\-list of leaf nodes
+* All leaf nodes are at the same level, i.e., tree is balanced
+
+#### B TREE & B\+ TREE
+
+* No data-pointers in the Internal Nodes
+* Keys are distributed all over the B Tree
+* Keys are gathered only in the B<sup>\+</sup> Tree leaves
+
+## Week 8
+
+#### FUNDAMENTAL TOOL: SORTING
+
+* Almost all SQL queries involve sortingof tuples w.r.t. ad\-hoc sorting requests defined by the user, e.g.:
+	* CREATE PRIMARY INDEX ON EMPLOYEE\(SSN\) means sort by SSN
+	* ORDER BY Name means sort by Name
+	* SELECT DISTINCT Salary means sort by Salary to create clusters and then identify the distinct values
+	* SELECT DNO, COUNT \(\*\) FROM EMPLOYEE GROUP BY DNO means sort by DNO to create clusters
+* Fundamental Limitation: we cannot store the entire relation into memory for sorting the records \(bubble sort; quick sort; heap sort; merge sort; ...\)
+* External Sorting: sorting algorithm for large relations stored on disk that do not fit entirely in main memory
+
+#### EXTERNAL SORTING: OVERVIEW
+
+* Principle: Divide & Sort \(Conquer\)
+	* Divide: a file of b blocks into L smaller sub\-files \(b/Lblocks each\)
+	* Sort: load each small sub\-file to memory, sort using e.g., quick\-sort, bubble\-sort and write it back to the disk
+	* Merge: merge two \(or more\) sorted sub\-files loaded from disk in memory creating bigger sorted sub\-files, that are merged in turn
+
+#### EXTERNAL SORTING: OVERVIEW
+
+* Lemma 1:The expected cost of the sort\-merge strategy in block accesses is:  
+2b\(1 \+ log<sub>M</sub>\(L\)\)  
+* b is the number of file blocks
+* M: degree of merging, i.e., number of sorted blocks merged in each loop
+* L: number of the initial sorted sub\-files\(before entering merging phase\)
+
+* M=2 gives the worst\-case performance
+	* Because: merge in parallel only a pair of blocks at each step
+* M\>2: merge more than two blocks at each step;\(M\-way merging\)\[\*\]
+
+#### STRATEGIES FOR SELECT
+
+* S1. Linear Search over a key
+	* Retrieve every record; test whether it satisfies the selection condition
+	* Expected Cost: b/2
+* S2. Binary Search over a key
+	* Expected Cost \(unsorted file\):  log<sub>2</sub>\(b\) \+ 2b\(1 \+ log<sub>M</sub>\(L\)\)
+	* Expected Cost \(sorted file\): log<sub>2</sub>\(b\)
+* S3. Primary Index or Hash Function over a key
+	* Precondition \(Index\): Primary Index of level t over key\(sorted by key\)
+	* Precondition \(Hash\): File hashed with the key
+	* Expected Cost \(sorted file\):  t \+ 1
+	* Expected Cost \(hashed file\):  1 \+ O\(n\) 
+		* n = overflown buckets
+* S4. Primary Index over a key involved in arange query:
+	* Use Index to find the record satisfying the equality\(e.g.,DNUMBER = 5\)and then retrieve all subsequent blocks from the ordered file
+	* Precondition: Primary Index of level t over the key \(file sorted by key\)
+	* Expected Cost \(sorted file\): t \+ O\(b\)
+* S5. Clustering Index over ordering, non\-key
+	* Retrieve all contiguous blocks of the cluster
+	* Precondition: Clustering Index of level t on non\-key\(file sorted by non\-key\)
+	* Expected cost \(sorted file\): t \+ O\(b/n\)
+		* Note 1: n= distinct values of the non\-key attribute
+		* Note 2: attribute is uniformly distributed
+* S6. Secondary Index \(B\+ Tree\) over non\-ordering key
+	* Precondition: File is not ordered by key
+	* Expected Cost: t \+ 1 
+	* Note: B\+ Leaf Node points at the unique block
+* S7. Secondary Index \(B\+ Tree\) over non\-ordering, non\-key
+	* Note: retrieve multiple records from different blocks having the same value
+	* Precondition: File is not ordered by non\-key
+	* Expected Cost: t \+ 1 \+ O\(b\)
+	* Note: B\+ Leaf Node points to a block of pointers to data blocks with Salary = 40K \(2 levels of indirection\)
+
+#### STRATEGIES FOR DISJUNCTIVE SELECT
+
+* Disjunctive Selections: conditions involving OR
+	* Final result: contains tuples satisfying the union of all selection conditions
+* Methodology:
+	* IF an access path exists, e.g., B\+/hash/primary\-index for all of the attributes: 
+		* use each to retrieve the set of records satisfying each condition
+		* union all sets to get the final result
+	* ELSE if none or some of the attributes have an access path, linear search is unavoidable
+
+#### STRATEGIES FOR CONJUNCTIVE SELECT
+
+* Conjunctive Selections: conditions involving AND
+* Methodology:
+	* IF an access path exists \(index\) for an attribute, use it to retrieve the tuples satisfying the condition, e.g., Salary \> 40000\[intermediate result\]
+	* GO through this intermediate result to check which record satisfies also the other condition\(s\), e.g., Name LIKE ‘%Chris%’in memory
+
+* If you have two indexes, which index is to be used first?
+	* Answer: use the index that generates the smallest intermediate result set hoping to fit in the memory 
+		* selectivity = tuples retrieved
+	* Optimization: find the execution sequence of conditions that minimizes the expected cost
+
+* Principle: Predict the selectivity beforehand!
+
+#### STRATEGIES FOR JOIN
+
+* Observation: the most resource\-consuming operator!
+* Focus: two\-way equijoin, i.e., join two relations with equality ‘=’ 
+
+* Five fundamental strategies for join processing:
+	* Naïve join \(no access path\)
+	* Nested\-loop join \(no access path\)
+	* Index\-based nested\-loop join \(index; B\+ Trees\)
+	* Merge\-join \(sorted relations\)
+	* Hash\-join \(hashed relations\)
+
+#### NAÏVE JOIN
+
+* Step 1: Compute the Cartesian product of R and S, i.e., all tuples from Rare concatenated \(combined\) with all tuples from S
+* Step 2: Store the result in a file T and for each concatenated tuple t = \(r, s\) with r in R and s in S check if r.A = s.B
+
+**Algorithm Naïve Join**
+
+* T = Cartesian R x S
+* ScanT, a tuple t in T at a time: t = \(r, s\)
+	* If r.A = s.B then add \(r, s\) to the result file
+	* Go to next tuple t in T
+
+* Outcome:  inefficient, typically the result is a small subset of the Cartesian
+	* What\-If: no tuples are actually matched; predict the matching tuples in advance
+
+#### NESTED\-LOOP JOIN
+
+**Algorithm Nested\-Loop Join**
+
+* For each tuple r in R
+	* For each tuple s in S
+		* If r.A = s.B then add \(r, s\) to the result file
+
+* Note: the outer & inner loops are over blocks and not over tuples
+* Note: Re\-form the pseudocode in a block\-centric programming mode
+
+Challenge 1: Which relation should be in the outer loop and which in the inner loop to minimize the join processing cost?
+
+#### NESTED\-LOOP JOIN: ALGORITHM
+
+* Step 1:
+	* LOAD a set \(chunk\) of blocks from the outer relation R
+	* LOAD one block from inner relation S
+	* Maintain an output buffer for the matching \(resulting\) tuples \(r, s\): r.A = s.B
+* Step 2:
+	* JOIN the S block with each R block from the chunk
+	* FOR each matching tuple r in R\-block and s in S\-block ADD \(r, s\) to Output Buffer
+	* IF Outer Buffer is full, PAUSE; WRITE the current join result to disk; CONTINUE
+* Step 3: LOAD next S\-block and GOTO Step 2
+* Step 4: GOTO Step 1
+
+#### INDEX\-BASED NESTED\-LOOP JOIN
+
+* Idea: Use of an index on either A or B joining attributes: R.A = S.B
+* Focus: Assume an index I on attribute B of relation S
+
+**Algorithm Index\-Based Nested\-Loop Join** 
+
+* For each tuple r in R
+	* Use index of B: I\(r.A\), to retrieve all tuples s in S having s.B = r.A
+	* For each such tuple s in S, add matching tuple \(r, s\) to the result file
+
+* Claim: Much faster compared to the nested\-loop join
+* Because: We get immediate access on s in S with s.B = r.A by searching for r.A using the index I, avoiding linear search on S
+* Challenge 2: Which index to use to minimize the join processing cost? 
+
+#### SORT\-MERGE JOIN
+
+* Idea: Use of the merge\-sort algorithm over two sorted relations w.r.t. their joining attributes
+* Pre\-condition: Relations R and Sare physically ordered on their joining A and B
+
+* Methodology: 
+	* Step 1: Load a pair \{R.block, S.block\} of sorted blocks into the memory
+	* Step 2: Both blocks are linearly scanned concurrently over the joining attributes \(sort\-merge algorithm in memory\)
+	* Step 3: If matching tuples found then store them in a buffer
+
+* Gain: The blocks of each file are scanned only once
+	* But: If R and S are not a\-priori physically ordered on A and B then sort them first!
+
+#### HASH\-JOIN
+
+* Pre\-condition: 
+	* File R is partitioned into M buckets w.r.t. hash function h over joining attribute A
+	* File S is also partitioned into M buckets w.r.t. the same hash function h over attribute B
+* Assumption: R is the smallest file and fits into main memory: M buckets of R are in memory
+
+**Algorithm Hash\-Join**
+
+* Partitioning phase
+	* For each tuple r in R
+		* Compute y = h\(r.A\)
+		* Place tuple r into bucket y = h\(r.A\) in memory
+* Probing phase
+	* For each tuple s in S
+		* Compute y = h\(s.B\) 
+		* Find the bucket y = h\(s.B\) in memory \(of the R partition\)
+		* For each tuple r in R in the bucket y = h\(s.B\)
+			* If s.B = r.A add\(r, s\) to the result file
+
+**Partitioning Phase**
+
+Partition of R over attribute A using hash h\(A\) = A mod M into M buckets
+
+**Probing Phase**
+
+Hashing each tuple s from S, using hash h\(s.B\) = s.B mod M to identify the y = h\(s.B\) bucket in memory
+
+#### NESTED\-LOOP JOIN COST PREDICTION
+
+* Total number of blocks read for outer relation E: n<sub>E</sub>
+* Outer Loops: Number of chunks of \(n<sub>B\-2</sub>\) blocks of outer relation: ceil\(n<sub>E</sub>/\(n<sub>B\-2</sub>\)\)
+* For each chunk of \(n<sub>B\-2</sub>\) blocks read all the blocks of inner relation D:
+* Total number of block read in all outer loops: n<sub>D</sub>\*ceil\(n<sub>E</sub>/\(n<sub>B\-2</sub>\)\)
+
+Total Expected Cost: n<sub>E</sub> \+ n<sub>D</sub>\*ceil\(n<sub>E</sub>/\(n<sub>B\-2</sub>\)\) block accesses
+
+## Week 9
+
+#### QUERY OPTIMIZATION
+
+* Input: Query
+* Output: Optimal execution plan
+
+* Heuristic Optimization:
+	* Task: Transform a SQL query into an equivalent and efficient query using Relational Algebra
+* Cost\-based Optimization: 
+	* Task 1: Provide alternative execution plans and estimate\(predict\) their costs
+	* Task 2: Choose the plan with the minimum cost
+	* Cost Function c\(x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>, x<sub>4</sub>, ...\) with optimization parameters:
+		* x<sub>1</sub> = # block accesses
+		* x<sub>2</sub> = memory requirements
+		* x<sub>3</sub> = CPU computational cost
+		* x<sub>4</sub> = network bandwidth
+		* ...
+
+#### COST\-BASED OPTIMIZATION
+
+* Exploit: statistical information to estimatethe execution cost of a query
+* Information for each Relation:
+	* number of records \(r\); \(average\) size of each record \(R\)
+	* number of blocks \(b\); blocking factor\(f\) i.e., records per block
+	* Primary File Organization: heap, hash, or sequential file
+	* Indexes: primary, clustering index, secondary index, B\+ Trees
+* Information for each Attribute A of each Relation:
+	* Number of Distinct Values \(NDV\) n of attribute A
+	* Domain range: \[min\(A\), max\(A\)\]
+	* Type: continuous or discrete attribute; key or non\-key
+	* Level t of Index of the attribute A, if exists
+	* Probability Distribution Function P\(A = x\)indicates the frequency \(probability\) of each value x of the attribute A in the relation
+
+#### SELECTION SELECTIVITY
+
+* selection selectivity sl\(A\) of attribute A is a real number:  0 ≤ sl\(A\) ≤  1
+
+* sl\(A\) = 0 : none of the records satisfies a condition over attribute A  
+```
+SELECT * FROM EMPLOYEE WHERE Salary = 1,000,000,000
+```
+* sl\(A\) = 1: all the records satisfy a condition over attribute A   
+```
+SELECT * FROM EMPLOYEE WHERE Salary > 0
+```
+* sl\(A\) = x: x% of the records satisfy a condition over attribute A  
+```
+SELECT * FROM EMPLOYEE WHERE Salary = 40000
+```
+
+Hence:  0 ≤ sl\(A\) ≤  1 oras percentage: 0% ≤ sl\(A\) ≤  100%  
+_i.e., probabilitythat a tuple satisfies a selection condition_
+
+#### SELECTION CARDINALITY
+
+* Challenge 1:Given r tuples and a selection condition over A, predict the expected number of tuples satisfying this condition without scanning the file
+
+* In other words, predict:  sl\(A\).r average number of tuples satisfying a condition over attribute A
+
+Selection Cardinality:  s = r.sl\(A\)∈\[0, r\]
+
+#### SELECTIVITY PREDICTION
+
+* Solution 1 \(no assumption; approximation\):
+	* Approximate the distribution of values via a histogram
+	* Gain: accurate selectivity estimate; Cost: maintenance overhead
+	* Then:a good selectivity estimate is:  
+	sl\(A = x\) ≈ P\(A = x\), which depends on the value of 𝑥∈\[min𝐴,max𝐴\]
+
+* Solution 2 \(uniformity assumption\):
+	* All values are uniformly distributed \(equiprobable\), thus, no histogram
+	* Gain: no need to maintain \(update\) a histogram
+	* Impact: provide a less accurate prediction for sl\(A\)  
+	sl\(A = x\) ≈ constant independent of the x value; ∀𝑥∈\[min𝐴,max𝐴\]
+
+* Adopt: Solution 2 \(uniformity assumption\)
+	* Let an equality condition on the key attribute A. Then, a good estimate is:  
+	sl\(A = x\) = 1/r, ∀𝑥∈\[min𝐴,max𝐴\]  
+	* since only one tuple satisfies the condition; selection cardinality s = 1 tuple
+
+#### RANGE SELECTION SELECTIVITY
+
+```
+SELECT * FROM RELATION WHERE A ≥ x
+```
+
+* Definition 1: Domain range: max\(A\) – min\(A\); A∈\[min\(A\),max\(A\)\]
+* Definition 2: Query range: max\(A\) – x; x∈\[min\(A\),max\(A\)\]
+
+sl\(A ≥ x\) = 0 if x \> max\(A\)
+
+sl\(A ≥ x\) = \(max\(A\) – x\)/\(max\(A\) – min\(A\)\) ∈ \[0, 1\]
+
+#### CONJUNCTIVE SELECTIVITY
+
+```
+SELECT * FROM RELATION WHERE (A = x) AND (B = y)
+```
+
+sl\(Q\) = sl\(A = x\).sl\(B = y\) ∈ \[0, 1\]
+
+P\(A ∩ B\) = P\(A\).P\(B\) = joint probability an employee satisfying both conditions, given that condition A is statistically independent of condition B
+
+#### DISJUNCTIVE SELECTIVITY
+
+```
+SELECT * FROM RELATION WHERE (A = x) OR (B = y)
+```
+
+sl\(Q\) = sl\(A\)\+sl\(B\) \- sl\(A\).sl\(B\) ∈ \[0, 1\]
+
+P\(A U B\) = P\(A\) \+ P\(B\)\-P\(A\).P\(B\) = probability an employee satisfying either condition A or condition B; both conditions are statistically independent
+
+#### SELECTION COST REFINEMENT
+
+* Target: be more accurate! express cost as a function of sl\(A\) = r/n
+
+```
+SELECT * FROM RELATION WHERE A = x
+```
+
+Context: b blocks, f blocking factor \(tuples/block\), r records, n = NDV\(A\)
+
+* Binary Search where the relation is sorted w.r.t. A:
+	* If A is a key, then 
+		* Expected Cost: log<sub>2</sub>\(b\) block accesses \(ind.sl\(A\)\)
+	* If A is not a key, then 
+		* log<sub>2</sub>\(b\) block accesses to reach the first block with record\(s\) A = x
+		* Access all contiguous blocks whose records satisfy: A = x
+		* Selection cardinality s = r.sl\(A= x\) tuples 
+		* Blocking factor: f tuples/block: access ceil\(s/f\) \- 1 more blocks
+		* Expected Cost: log<sub>2</sub>\(b\) + ceil\(s/f\) \- 1 = log<sub>2</sub>\(b\) + ceil\(r.sl\(A\)/f\) \- 1 
+
+* Multilevel Primary Index of level: t over the key A and equality A = x
+	* Expected Cost: t \+ 1  
+* Hash File Structure
+	* Apply the hash function h\(A\) over the key A and retrieve the block
+	* Expected cost: 1 
+	* best case; no overflown buckets
+* Multilevel Primary Index of level: t over the key A with range A ≥ x
+	* Tree traversal: t block accesses 
+	* Range selection cardinality: s = r.sl\(A\)
+	* Blocking factor: f records/block: ceil\(s/f\) blocks
+	* Expected Cost: t + ceil\(s/f\) = t \+ ceil\(r.sl\(A\)/f\) block accesses
+	* Note: sl\(A\) is the range selection selectivity
+* Clustering Index over a ordering, non\-key
+	* Tree traversal: t block accesses
+	* Selection cardinality s = r.sl\(A\) tuples 
+	* Blocking factor: f records/block: ceil\(s/f\) blocks
+	* Expected Cost: t + ceil\(s/f\) = t \+ ceil\(r.sl\(A\) /f\)
+	* Fine\-grained Cost: t \+ \[r/f P\(A=x\)\]
+* B\+ Tree over a non\-ordering, key with equality A=x
+	* Tree traversal: t block accesses
+	* One data block since s = 1
+	* Expected cost: t \+ 1 
+* B\+ Tree over a non\-ordering, non\-key with equality A = x 
+	* Tree traversal: t block accesses
+	* 1 block accessto load the block of block pointers
+	* Selection cardinality s = r.sl\(A\) tuples
+	* Each tuple maybe in a different data block \(worst case\) thus, access up to s blocks
+	* Expected Cost: t \+ 1 \+ s = t \+ 1 \+ r.sl\(A\)
+
+## Week 10
+
+#### JOIN SELECTIVITY & CARDINALITY
+
+* Join query: R⋈S and Cartesian product: R×S
+	* SELECT \* FROM R, S 
+	* SELECT \* FROM R, S WHERE R.A = S.B
+
+* Definition 1: join selectivity \(js\) is the fraction of the matching tuples between the relations R and S out of the Cartesian cardinality \(\#of concatenated tuples\): 
+	* js = \|R⋈S\|/\|R×S\| with 0 ≤  js ≤1
+	* Cartesian cardinality: \|R×S\| = \|R\|.\|S\|
+* Definition 2: join cardinality jc:= js.\|R\|.\|S\|
+
+#### JOIN SELECTIVITY THEOREM
+
+* Theorem 1:
+	* Given n = NDV\(A, R\) and m = NDV\(B, S\):
+	* js = 1 / max\(n, m\) 
+	* jc = \(\|R\|.\|S\|\) / max\(n, m\)
+
+* Example: Show the dependents of each employee; 
+	* Note: an employee might have zero to many dependents
+
+```
+SELECT * FROM EMPLOYEE E, DEPENDENT P
+WHERE    E.SSN = P.E_SSN
+```
+
+n = NDV\(SSN,E\) = 2000; \|E\| = 2000 employees  
+m = NDV\(E\_SSN, P\) = 3; \|P\| = 5 dependents  
+js = 1/max\(2000,3\) = 1/2000 = 0.0005 or 0.05% \(probability of matching tuple\)  
+jc = 0.0005 \* 2000 \* 5 = 5 matching tuples \(as expected\)
+
+* Relation R and S with b<sub>R</sub> and b<sub>S</sub> blocks;  R.A = S.B
+* Memory: n<sub>B</sub> blocks; n = NDV\(R.A\), m = NDV\(S.B\)
+* Result block: blocking factor f<sub>RS</sub> matching tuples/block
+* Size of matching tuple \(r, s\) = size of tuple r∈𝐑 \+ size of tuple s∈𝐒
+
+* Write every full result block to disk
+* Matching tuples: jc = js.\|R\| . \|S\| = \(1/max\(n, m\)\).\|R\| . \|S\|
+* result blocks: k = \(js. \|R\| . \|S\|\) / f<sub>RS</sub>
+
+#### JOIN COST REFINEMENT
+
+**Strategy: Nested\-Loop Join**
+
+```
+SELECT * FROM EMPLOYEE E, DEPARTMENT D
+WHERE    E.SSN = D.MGR_SSN
+```
+
+D is the outer relation, i.e., b<sub>D</sub> < b<sub>E</sub> with outer loops: ceil\(b<sub>D</sub>/\(n<sub>B</sub>\-2\)\)
+
+Expected Cost: b<sub>D</sub> \+ \(ceil\(b<sub>D</sub>/\(n<sub>B</sub>\-2\)\) . b<sub>E</sub>
+
+* Matching tuples: jc = js.\|E\| . \|D\| = \(1/max\(n, m\)\).\|E\| . \|D\|
+* Number of result blocks: k = \(js.\|E\| .\|D\|\)/ f<sub>RS</sub>
+* Include k result\-block writes from memory to disk during the execution
+
+Refined Expected Cost: b<sub>D</sub> \+ \(ceil\(b<sub>D</sub>/\(n<sub>B</sub>\-2\)\) . b<sub>E</sub> \+ \(js.\|E\| . \|D\|/ f<sub>RS</sub>\)
+
+**Strategy: Index\-based Nested\-Loop Join**
+
+Primary Index on MGR\_SSN with x<sub>D</sub> levels
+
+```
+SELECT * FROM EMPLOYEE E, DEPARTMENT D
+WHERE    E.SSN = D.MGR_SSN
+```
+
+For each employeee, use index to check if they are a manager
+
+* Matching tuples: jc = js . \|E\| . \|D\| = \(1/max\(n, m\)\) . \|E\| . \|D\|
+* Number of result blocks: k = \(js.\|E\|.\|D\|\) / f<sub>RS</sub>
+
+Case: Primary Index on ordering / key:
+
+Refined Expected Cost\: b<sub>E</sub> \+ \|E\| \. \(x<sub>D</sub> \+ 1\) \+ \(js\.\|E\|\.\|D\| / f<sub>RS</sub>\) 
+
+Clustering Index on DNO with x<sub>E</sub> levels, selection cardinality s<sub>E</sub>, blocking factor f<sub>E</sub>
+
+```
+SELECT * FROM EMPLOYEE E, DEPARTMENT D
+WHERE    E.DNO= D.DNUMBER
+```
+
+Selection cardinality of DNO \s<sub>E</sub> = \(1/NDV\(DNO\)\)\.\|E\|
+
+For each department d, use index to load its employees
+
+* Case: Clustering Index on ordering / non\-key
+	* Selection cardinality := employees per department: s<sub>E</sub>
+	* Blocks of employees per department: ceil\(s<sub>E</sub>/f<sub>E</sub>\)
+	* Number of result blocks: k = \(js.\|E\| .\|D\|\) / f<sub>RS</sub>
+
+Refined Expected Cost: b<sub>D</sub> \+ \|D\| .\(x<sub>E</sub> \+ ceil\(s<sub>E</sub>/f<sub>E</sub>\)\) + \(js.\|E\| .\|D\|/ f<sub>RS</sub>\) 
+
+#### OUTLIERS
+
+\b<sub>D</sub> \+ \|D\|.\(x<sub>E</sub> \+ 1 \+ s<sub>E</sub>\) \+ \(js.\|E\|.\|D\|/f<sub>RS</sub>\) 
+
+n = NDV\(DNO\); m = NDV\(DNUMBER\)
+
+\b<sub>D</sub> \+ \|D\|.\(x<sub>E</sub> \+ 1 \+ \(1/n\).\|E\|\) \+ \(\(1/max\(n, m\)\).\|E\|.\|D\|/f<sub>RS</sub>\)
+
+Need: predictor should identify extremely fast the number of distinct values...
+
+Hash\-based Method: O\(r\) ...does not scale as r → ∞  
+HyperLogLogMethod: O\(log\(log r\) \+ logr\) ...does scale out! 
+
+**Strategy: Sort\-Merge:** both files are sorted on joining attributes A and B
+
+Refined Expected Cost: \b<sub>R</sub> \+ b<sub>S</sub> \+ \(js.\|R\|.\|S\|/f<sub>RS</sub>\)
+
+**Strategy: Hash\-Join:** both files are hashed w.r.t. same hash function h 
+
+Refined Expected Cost: \3.\(b<sub>R</sub> \+ b<sub>S</sub>\) \+ \(js.\|R\|.\|S\|/f<sub>RS</sub>\) 
 
